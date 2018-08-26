@@ -76,6 +76,9 @@ fun Application.module() {
         get("/{z}/{x}/{y_type}") {
             println(call.parameters)
             println(call.parameters["y_type"]!!.split('.'))
+            call.respondWrite(contentType = ContentType.Application.GZip) {
+//                this.write()
+            }
         }
 
 
