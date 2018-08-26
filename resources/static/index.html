@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tiling Map Server</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+<script>
+    var map = new mapboxgl.Map({
+        'container': 'map',
+        'maxTileCacheSize': 5,
+        'style': {
+            'version': 8,
+            'sources': {
+                'georocket': {
+                    "type": "vector",
+                    "tiles": [location.protocol + '//' + location.host + "/{z}/{x}/{y}.mvt"]
+                },
+                'OSM': {
+                    "type": "raster",
+                    "tiles": [
+                        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    ],
+                    "tileSize": 256
+                }
+            },
+            "layers": [
+
+                {
+                    "id": "osm",
+                    "source": "OSM",
+                    "type": "raster"
+                },
+                {
+                    "id": "geo",
+                    "source": "georocket",
+                    "source-layer": "de.fraunhofer.igd.main",
+                    "type": "line",
+                    "paint": {
+                        "line-color": "#000000"
+                    }
+                }
+            ]
+        }
+    });
+
+    setInterval(function() {
+        if (map.areTilesLoaded()) {
+            console.log("load");
+
+        }
+    }, 1000);
+</script>
+</body>
+</html>

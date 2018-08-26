@@ -1,5 +1,7 @@
 package io.marauder
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.request.*
@@ -14,6 +16,11 @@ import io.ktor.http.cio.websocket.*
 import java.time.*
 import io.ktor.gson.*
 import io.ktor.http.cio.websocket.Frame
+import io.marauder.tyler.models.FeatureCollection
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.newSingleThreadContext
+import java.io.InputStreamReader
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.main(args)
 
@@ -55,25 +62,25 @@ fun Application.module() {
         }
     }
 
+
     routing {
-        get("/") {
-            call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
+        post("/") {
+            val input = Gson().fromJson(InputStreamReader(call.receiveStream()), FeatureCollection::class.java)
+            val job = launch(newSingleThreadContext("tiling-process-1")) {
+                //TODO: start tiling in independent thread
+            }
+
+            call.respondText("tiling started", contentType = ContentType.Text.Plain)
         }
 
-        // Static feature. Try to access `/static/ktor_logo.svg`
+        get("/{z}/{x}/{y_type}") {
+            println(call.parameters)
+            println(call.parameters["y_type"]!!.split('.'))
+        }
+
+
         static("/static") {
             resources("static")
-        }
-
-        get<MyLocation> {
-            call.respondText("Location: name=${it.name}, arg1=${it.arg1}, arg2=${it.arg2}")
-        }
-        // Register nested routes
-        get<Type.Edit> {
-            call.respondText("Inside $it")
-        }
-        get<Type.List> {
-            call.respondText("Inside $it")
         }
 
         install(StatusPages) {
@@ -86,7 +93,7 @@ fun Application.module() {
 
         }
 
-        webSocket("/myws/echo") {
+        /*webSocket("/myws/echo") {
             send(Frame.Text("Hi from server"))
             while (true) {
                 val frame = incoming.receive()
@@ -94,22 +101,11 @@ fun Application.module() {
                     send(Frame.Text("Client said: " + frame.readText()))
                 }
             }
-        }
+        }*/
 
-        get("/json/gson") {
-            call.respond(mapOf("hello" to "world"))
-        }
+
     }
-}
-
-@Location("/location/{name}")
-class MyLocation(val name: String, val arg1: Int = 42, val arg2: String = "default")
-
-@Location("/type/{name}") data class Type(val name: String) {
-    @Location("/edit") data class Edit(val type: Type)
-    @Location("/list/{page}") data class List(val type: Type, val page: Int)
 }
 
 class AuthenticationException : RuntimeException()
 class AuthorizationException : RuntimeException()
-
