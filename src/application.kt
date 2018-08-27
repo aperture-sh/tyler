@@ -1,4 +1,4 @@
-package io.marauder
+package io.marauder.tyler
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

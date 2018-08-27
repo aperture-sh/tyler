@@ -16,7 +16,7 @@ buildscript {
 apply plugin: 'kotlin'
 apply plugin: 'application'
 
-group 'viz-tyler'
+group 'tyler'
 version '0.0.1'
 mainClassName = "io.ktor.server.netty.DevelopmentEngine"
 
