@@ -7,4 +7,6 @@ data class Feature(val type: String = "Feature",
 )
 data class Geometry(val type: String, var coordinates: MutableList<List<List<Double>>>)
 
+data class Tile(val featureCollection: FeatureCollection, val z: Int, val x: Int, val y: Int, val extend: Int)
+
 typealias BoundingBox = Pair<Pair<Double, Double>, Pair<Double, Double>>

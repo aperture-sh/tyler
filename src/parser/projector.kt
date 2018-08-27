@@ -1,8 +1,6 @@
 package io.marauder.tyler.parser
 
-import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.Feature
-import io.marauder.tyler.models.FeatureCollection
+import io.marauder.tyler.models.*
 
 fun projectFeatures(featureCollection: FeatureCollection): FeatureCollection =
         FeatureCollection(featureCollection.type, featureCollection.features.map { f -> projectFeature(f) })
@@ -49,39 +47,42 @@ fun calcBbox(f: List<Feature>): BoundingBox {
     return bbox
 }
 
-fun intersects(b1: BBox, b2: BBox): Boolean =
-        (b1.min[0] < b2.max[0] && b1.max[0] > b2.min[0] && b1.max[1] > b2.min[1] && b1.min[1] < b2.max[1])
+fun intersects(b1: BoundingBox, b2: BoundingBox): Boolean =
+        (b1.first.first < b2.second.first && b1.second.first > b2.first.first && b1.second.second > b2.first.second && b1.first.second < b2.second.second)
 
-fun includesPoints(b: BBox, coords: List<List<Double>>): Boolean =
+fun includesPoints(b: BoundingBox, coords: List<List<Double>>): Boolean =
         coords.map { includesPoint(b, it) }.fold(true, { a,b -> a && b})
 
-fun includesPoint(b: BBox, coord: List<Double>): Boolean =
-        coord[0] < b.max[0] && coord[0] > b.min[0] && coord[1] < b.max[1] && coord[1] > b.min[1]
+fun includesPoint(b: BoundingBox, coord: List<Double>): Boolean =
+        coord[0] < b.second.first && coord[0] > b.first.first && coord[1] < b.second.second && coord[1] > b.first.second
 
 fun transformTile(t: Tile) : Tile =
-        Tile(t.features.map {
+        Tile(FeatureCollection(features = t.featureCollection.features.map {
             Feature(
-                    Geom(
-                            it.geom.type,
-                            it.geom.coords.map { transformPoint(it, t.extend, t.z, t.x, t.y) }
+                    it.type,
+                    Geometry(
+                            it.geometry.type,
+                            mutableListOf(it.geometry.coordinates[0].map { transformPoint(it, t.extend, t.z, t.x, t.y) })
                     ),
-                    it.properties,
-                    it.min,
-                    it.max
+                    it.properties
             )
-        },
-                t.extend,
+        }),
+                t.z,
                 t.x,
                 t.y,
-                t.z)
+                t.extend
+        )
 
 fun transformPoint(p: List<Double>, extend: Int, z: Int, x: Int, y: Int) : List<Double> =
         listOf(Math.round(extend * (p[0] * z - x)).toDouble(), Math.round(extend * (p[1] * z - y)).toDouble())
 
-fun transformBBox(z: Int, x: Int, y: Int, extend: Int, bbox: BBox) : BBox =
-        BBox(transformPoint(projectPoint(mutableListOf(bbox.min[0], bbox.max[1])), extend, 1 shl z, x, y).toMutableList(), transformPoint(projectPoint(mutableListOf(bbox.max[0], bbox.min[1])), extend, 1 shl z, x, y).toMutableList())
+fun transformBBox(z: Int, x: Int, y: Int, extend: Int, bbox: BoundingBox) : BoundingBox =
+        BoundingBox(
+                transformPoint(projectPoint(mutableListOf(bbox.first.first, bbox.second.second)), extend, 1 shl z, x, y).zipWithNext().first(),
+                transformPoint(projectPoint(mutableListOf(bbox.second.first, bbox.first.second)), extend, 1 shl z, x, y).zipWithNext().first()
+        )
 
-fun tileBBox(z: Int, x: Int, y: Int) = BBox(mutableListOf(tileToLon(x, z), tileToLat( y+1, z)), mutableListOf(tileToLon(x+1, z), tileToLat(y, z)))
+fun tileBBox(z: Int, x: Int, y: Int) = BoundingBox(Pair(tileToLon(x, z), tileToLat( y+1, z)), Pair(tileToLon(x+1, z), tileToLat(y, z)))
 
 fun tileToLon(x: Int, z: Int) = x.toDouble() / Math.pow(2.0, z.toDouble()) * 360.0 - 180.0
 

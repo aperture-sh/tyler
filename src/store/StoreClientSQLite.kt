@@ -1,10 +1,12 @@
 package io.marauder.tyler.store
 
+import com.google.gson.Gson
+import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
+import io.marauder.tyler.parser.mergeTiles
 import no.ecc.vectortile.VectorTileDecoder
 import no.ecc.vectortile.VectorTileEncoder
 import java.io.ByteArrayOutputStream
-import java.io.Writer
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.zip.GZIPInputStream
@@ -69,7 +71,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), Gson().fromJson(tile, FeatureCollection::class.java), z, x, y))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
@@ -87,7 +89,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+//            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
@@ -102,7 +104,21 @@ class StoreClientSQLite(db: String) : StoreClient {
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (exists(x, y, z) || true) {
+            val out = ByteArrayOutputStream()
+            val gzip = GZIPOutputStream(out)
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.close()
+            val sql = """
+                UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
+            """
+            val stmt = conn?.prepareStatement(sql)
+            stmt?.setBytes(1, out.toByteArray())
+            stmt?.execute()
+            stmt?.close()
+        } else {
+//            setTile(x, y, z, tile)
+        }
     }
 
     override fun getTile(x: Int, y: Int, z: Int) : ByteArray? {
@@ -134,21 +150,21 @@ class StoreClientSQLite(db: String) : StoreClient {
         }
     }
 
-    override fun serveTile(x: Int, y: Int, z: Int, writer: Writer, properties: List<String>, filter: List<List<Double>>) {
+    override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<BoundingBox>) : ByteArray? {
         val sql = """
             SELECT tile_data FROM tiles WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
         val stmt = conn?.createStatement()
         val rs = stmt?.executeQuery(sql)
         if (rs != null && rs.next()) {
-            if (properties.isEmpty) {
-                out.end(Buffer.buffer(rs.getBytes(1)))
+            if (properties.isEmpty()) {
+                return getTile(x, y, z)
             } else {
                 val decoder = VectorTileDecoder()
                 decoder.isAutoScale = false
                 val encoder = VectorTileEncoder(4096, 7, false)
 
-                decoder.decode(getTileBytes(x, y, z)!!).asList().forEach {
+                decoder.decode(getTile(x, y, z)!!).asList().forEach {
                     encoder.addFeature("de.fraunhofer.igd.main", it.attributes.filter { properties.contains(it.key) },  it.geometry)
                 }
 
@@ -157,11 +173,10 @@ class StoreClientSQLite(db: String) : StoreClient {
                 gzip.write(encoder.encode())
                 gzip.close()
 
-                out.end(Buffer.buffer(os.toByteArray()))
+                return os.toByteArray()
             }
         } else {
-            (out as HttpServerResponse).setStatusCode(404).end()
-
+            return null
         }
     }
 

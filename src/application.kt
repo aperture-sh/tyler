@@ -1,7 +1,6 @@
 package io.marauder.tyler
 
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.request.*
@@ -11,21 +10,23 @@ import io.ktor.content.*
 import io.ktor.locations.*
 import io.ktor.features.*
 import org.slf4j.event.*
-import io.ktor.websocket.*
-import io.ktor.http.cio.websocket.*
 import java.time.*
 import io.ktor.gson.*
-import io.ktor.http.cio.websocket.Frame
 import io.marauder.tyler.models.FeatureCollection
-import kotlinx.coroutines.experimental.delay
+import io.marauder.tyler.store.StoreClient
+import io.marauder.tyler.store.StoreClientSQLite
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import java.io.InputStreamReader
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.main(args)
 
+lateinit var store: StoreClient;
+
 @Suppress("unused") // Referenced in application.conf
 fun Application.module() {
+    store = StoreClientSQLite("./storage")
+
     install(Locations) {
     }
 
@@ -75,9 +76,10 @@ fun Application.module() {
 
         get("/{z}/{x}/{y_type}") {
             println(call.parameters)
-            println(call.parameters["y_type"]!!.split('.'))
-            call.respondWrite(contentType = ContentType.Application.GZip) {
-//                this.write()
+            val y_list = call.parameters["y_type"]!!.split('.')
+
+            call.respondBytes(contentType = ContentType.Application.GZip) {
+                store.serveTile(call.parameters["x"]!!.toInt(), y_list[0]!!.toInt(), call.parameters["z"]!!.toInt()) ?: ByteArray(0)
             }
         }
 

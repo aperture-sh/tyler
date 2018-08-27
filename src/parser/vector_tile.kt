@@ -1,6 +1,8 @@
 package io.marauder.tyler.parser
 
+import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
+import io.marauder.tyler.models.Tile
 import no.ecc.vectortile.VectorTileDecoder
 import no.ecc.vectortile.VectorTileEncoder
 
@@ -11,14 +13,14 @@ fun createTile(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): By
     val encoder = VectorTileEncoder(4096, 8, false)
 
     transformTile(
-            Tile(features, 4096, x, y, 1 shl z)
-    ).features.map {
-        val geom = when (it.geom.type) {
-            "Polygon" ->  gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "MultiPolygon" -> gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "Point" -> gf.createPoint(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
-            "LineString" -> gf.createLineString(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            else ->  gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            Tile(featureCollection, 1 shl z, x, y, 4096)
+    ).featureCollection.features.map {
+        val geom = when (it.geometry.type) {
+            "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            "Point" -> gf.createPoint(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
+            "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
         }
         encoder.addFeature("de.fraunhofer.igd.main", it.properties, geom)
     }
@@ -31,14 +33,14 @@ fun createTileTransform(featureCollection: FeatureCollection, z: Int, x: Int, y:
     val encoder = VectorTileEncoder(4096, 8, false)
 
     transformTile(
-            Tile(features, 4096, x, y, 1 shl z)
-    ).features.map {
-        val geom = when (it.geom.type) {
-            "Polygon" ->  gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "MultiPolygon" -> gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "Point" -> gf.createPoint(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
-            "LineString" -> gf.createLineString(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            else ->  gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            Tile(featureCollection, 1 shl z, x, y, 4096)
+    ).featureCollection.features.map {
+        val geom = when (it.geometry.type) {
+            "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            "Point" -> gf.createPoint(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
+            "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
         }
         encoder.addFeature("de.fraunhofer.igd.main", it.properties, geom)
     }
@@ -60,13 +62,13 @@ fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : B
 
     transformTile(
             Tile(t2, 4096, x, y, 1 shl z)
-    ).features.forEach {
-        val geom = when (it.geom.type) {
-            "Polygon" ->  gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "MultiPolygon" -> gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "Point" -> gf.createPoint(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
-            "LineString" -> gf.createLineString(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            else ->  gf.createPolygon(it.geom.coords.map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+    ).featureCollection.features.forEach {
+        val geom = when (it.geometry.type) {
+            "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            "Point" -> gf.createPoint(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
+            "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
         }
         encoder.addFeature("de.fraunhofer.igd.main", it.properties, geom)
     }
@@ -75,7 +77,7 @@ fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : B
     return encoder.encode()
 }
 
-fun filterTileBoxes(features: List<VectorTileDecoder.Feature>, boxes: List<BBox>, z: Int, x: Int, y: Int): List<VectorTileDecoder.Feature> {
+fun filterTileBoxes(features: List<VectorTileDecoder.Feature>, boxes: List<BoundingBox>, z: Int, x: Int, y: Int): List<VectorTileDecoder.Feature> {
     val f = features.filter {
         boxes
                 .map { box -> includesPoints(transformBBox(z, x, y, features[0].extent, box), it.geometry.coordinates.map { listOf(it.x, it.y) })  }
