@@ -1,6 +1,5 @@
 package io.marauder.tyler.parser
 
-import io.marauder.tyler.models.Feature
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Tile
 import io.marauder.tyler.store.StoreClient
@@ -45,12 +44,11 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
 
     fun split(f: FeatureCollection, x: Int, y: Int, z: Int) {
         val z2 = 1 shl z
-//        if (z >= minZoom) {
-//            f.features.forEach { println(it.geometry.coordinates) }
+        if (z >= minZoom) {
             launch {
                 client.updateTile(x, y, z, createTileTransform(f, z, x, y))
             }
-//        }
+        }
 
         val k1 = 0.5 * BUFFER / EXTENT
         val k2 = 0.5 - k1
