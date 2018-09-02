@@ -1,0 +1,20 @@
+image: openjdk:8
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - touch ~/.bashrc
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+build:
+  stage: build
+  script:
+    - apt-get update && apt-get -y install git build-essential
+    - ./gradlew build
+  artifacts:
+    untracked: true
+    expire_in: 30 minutes
+
