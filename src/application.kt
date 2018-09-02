@@ -13,6 +13,8 @@ import org.slf4j.event.*
 import java.time.*
 import io.ktor.gson.*
 import io.marauder.tyler.models.FeatureCollection
+import io.marauder.tyler.parser.Tiler
+import io.marauder.tyler.parser.projectFeatures
 import io.marauder.tyler.store.StoreClient
 import io.marauder.tyler.store.StoreClientSQLite
 import kotlinx.coroutines.experimental.launch
@@ -69,6 +71,8 @@ fun Application.module() {
             val input = Gson().fromJson(InputStreamReader(call.receiveStream()), FeatureCollection::class.java)
             val job = launch(newSingleThreadContext("tiling-process-1")) {
                 //TODO: start tiling in independent thread
+                val tyler = Tiler(store, 0, 15)
+                tyler.tiler(projectFeatures(input))
             }
 
             call.respondText("tiling started", contentType = ContentType.Text.Plain)
@@ -79,7 +83,7 @@ fun Application.module() {
             val y_list = call.parameters["y_type"]!!.split('.')
 
             call.respondBytes(contentType = ContentType.Application.GZip) {
-                store.serveTile(call.parameters["x"]!!.toInt(), y_list[0]!!.toInt(), call.parameters["z"]!!.toInt()) ?: ByteArray(0)
+                store.serveTile(call.parameters["x"]!!.toInt(), y_list[0].toInt(), call.parameters["z"]!!.toInt()) ?: ByteArray(0)
             }
         }
 

@@ -12,9 +12,7 @@ val gf = org.locationtech.jts.geom.GeometryFactory()
 fun createTile(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): ByteArray {
     val encoder = VectorTileEncoder(4096, 8, false)
 
-    transformTile(
-            Tile(featureCollection, 1 shl z, x, y, 4096)
-    ).featureCollection.features.map {
+    featureCollection.features.map {
         val geom = when (it.geometry.type) {
             "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
             "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
