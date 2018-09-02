@@ -3,7 +3,7 @@ package io.marauder.tyler.parser
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Tile
 import io.marauder.tyler.store.StoreClient
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import java.util.*
 
 class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5) {
@@ -35,17 +35,18 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
         while (q.isNotEmpty()) {
             ++tileCount
             if (tileCount % 250 == 0) {
-                println("$tileCount tiles saved!")
+                println("$tileCount tiles queued")
             }
             val t = q.poll()
             split(t.featureCollection, t.x, t.y, t.z)
         }
+        println("finished split: ${input.features.size} features")
     }
 
     fun split(f: FeatureCollection, x: Int, y: Int, z: Int) {
         val z2 = 1 shl z
         if (z >= minZoom) {
-            launch {
+            runBlocking {
                 client.updateTile(x, y, z, createTileTransform(f, z, x, y))
             }
         }
