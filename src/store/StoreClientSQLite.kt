@@ -27,8 +27,8 @@ class StoreClientSQLite(db: String) : StoreClient {
             CREATE TABLE IF NOT EXISTS tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob, primary key (zoom_level, tile_column, tile_row));
             """
         val stmt = conn.createStatement()
-        stmt?.execute(sql)
-        stmt?.close()
+        stmt.execute(sql)
+        stmt.close()
     }
 
     override fun setTile(x: Int, y: Int, z: Int, tile: String) {
@@ -40,12 +40,12 @@ class StoreClientSQLite(db: String) : StoreClient {
             INSERT INTO tiles(zoom_level, tile_column, tile_row, tile_data) VALUES (?, ?, ?, ?)
             """
         val stmt = conn.prepareStatement(sql)
-        stmt?.setInt(1, z)
-        stmt?.setInt(2, x)
-        stmt?.setInt(3, (1 shl z) -1 - y)
-        stmt?.setBytes(4, out.toByteArray())
-        stmt?.execute()
-        stmt?.close()
+        stmt.setInt(1, z)
+        stmt.setInt(2, x)
+        stmt.setInt(3, (1 shl z) -1 - y)
+        stmt.setBytes(4, out.toByteArray())
+        stmt.execute()
+        stmt.close()
         out.close()
     }
 
@@ -58,12 +58,12 @@ class StoreClientSQLite(db: String) : StoreClient {
             INSERT INTO tiles(zoom_level, tile_column, tile_row, tile_data) VALUES (?, ?, ?, ?)
             """
         val stmt = conn.prepareStatement(sql)
-        stmt?.setInt(1, z)
-        stmt?.setInt(2, x)
-        stmt?.setInt(3, (1 shl z) -1 - y)
-        stmt?.setBytes(4, out.toByteArray())
-        stmt?.execute()
-        stmt?.close()
+        stmt.setInt(1, z)
+        stmt.setInt(2, x)
+        stmt.setInt(3, (1 shl z) -1 - y)
+        stmt.setBytes(4, out.toByteArray())
+        stmt.execute()
+        stmt.close()
         out.close()
     }
 
@@ -77,9 +77,9 @@ class StoreClientSQLite(db: String) : StoreClient {
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
             val stmt = conn.prepareStatement(sql)
-            stmt?.setBytes(1, out.toByteArray())
-            stmt?.execute()
-            stmt?.close()
+            stmt.setBytes(1, out.toByteArray())
+            stmt.execute()
+            stmt.close()
         } else {
             setTile(x, y, z, tile)
         }
@@ -95,9 +95,9 @@ class StoreClientSQLite(db: String) : StoreClient {
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
             """
             val stmt = conn.prepareStatement(sql)
-            stmt?.setBytes(1, out.toByteArray())
-            stmt?.execute()
-            stmt?.close()
+            stmt.setBytes(1, out.toByteArray())
+            stmt.execute()
+            stmt.close()
         } else {
             setTile(x, y, z, tile)
         }
@@ -113,9 +113,9 @@ class StoreClientSQLite(db: String) : StoreClient {
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
             """
             val stmt = conn.prepareStatement(sql)
-            stmt?.setBytes(1, out.toByteArray())
-            stmt?.execute()
-            stmt?.close()
+            stmt.setBytes(1, out.toByteArray())
+            stmt.execute()
+            stmt.close()
         } else {
 //            setTile(x, y, z, tile)
         }
@@ -125,13 +125,13 @@ class StoreClientSQLite(db: String) : StoreClient {
         val sql = """
             SELECT tile_data FROM tiles WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
-        val stmt = conn?.createStatement()
-        val rs = stmt?.executeQuery(sql)
+        val stmt = conn.createStatement()
+        val rs = stmt.executeQuery(sql)
         if (rs != null && rs.next()) {
-            val ins = rs?.getBinaryStream(1)
+            val ins = rs.getBinaryStream(1)
             return GZIPInputStream(ins).readBytes()
         } else {
-            return null;
+            return null
         }
     }
 
@@ -139,14 +139,14 @@ class StoreClientSQLite(db: String) : StoreClient {
         val sql = """
             SELECT tile_data FROM tiles WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
-        val stmt = conn?.createStatement()
-        val rs = stmt?.executeQuery(sql)
+        val stmt = conn.createStatement()
+        val rs = stmt.executeQuery(sql)
         if (rs != null && rs.next()) {
-            val ins = rs?.getBinaryStream(1)
+            val ins = rs.getBinaryStream(1)
             val gzip = GZIPInputStream(ins)
             return gzip.readBytes().contentToString()
         } else {
-            return null;
+            return null
         }
     }
 
@@ -155,7 +155,7 @@ class StoreClientSQLite(db: String) : StoreClient {
             SELECT tile_data FROM tiles WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
         val stmt = conn.createStatement()
-        val rs = stmt?.executeQuery(sql)
+        val rs = stmt.executeQuery(sql)
         if (rs != null && rs.next()) {
             if (properties.isEmpty()) {
                 return getTile(x, y, z)
@@ -185,7 +185,7 @@ class StoreClientSQLite(db: String) : StoreClient {
           DELETE FROM tiles WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
         val stmt = conn.createStatement()
-        stmt?.execute(sql)
+        stmt.execute(sql)
     }
 
     fun exists(x: Int, y: Int, z: Int) : Boolean {
@@ -193,7 +193,7 @@ class StoreClientSQLite(db: String) : StoreClient {
             SELECT 1 FROM tiles WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
         val stmt = conn.createStatement()
-        return checkNotNull(stmt?.executeQuery(sql)?.next())
+        return checkNotNull(stmt.executeQuery(sql).next())
     }
 
     override fun clearStore() {
@@ -201,7 +201,7 @@ class StoreClientSQLite(db: String) : StoreClient {
             DELETE FROM tiles;
             """
         val stmt = conn.createStatement()
-        stmt?.execute(sql)
+        stmt.execute(sql)
     }
 
 }
