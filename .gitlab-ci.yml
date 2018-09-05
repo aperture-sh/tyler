@@ -1,5 +1,3 @@
-image: openjdk:8
-
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - touch ~/.bashrc
@@ -10,11 +8,30 @@ cache:
     - .gradle/caches
 
 build:
+  image: openjdk:8
   stage: build
   script:
     - apt-get update && apt-get -y install git build-essential
-    - ./gradlew build
+    - ./gradlew build && ./gradlew shadowJar
   artifacts:
-    untracked: true
+    paths:
+    - build
     expire_in: 30 minutes
 
+build_image:
+  image: docker:stable
+  stage: build
+  services:
+  - docker:dind
+  variables:
+    UPSTREAM_IMAGE: $CI_REGISTRY/marauder/$CI_PROJECT_NAME
+    DOCKER_HOST: tcp://docker:2375/
+  # Improve performance by enable d_type support for backing xfs filesystem
+  #   DOCKER_DRIVER: overlay2
+  before_script:
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+  script:
+  - docker pull $UPSTREAM_IMAGE:latest || true
+  - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:latest .
+  - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+  - docker push $CI_REGISTRY_IMAGE:latest
