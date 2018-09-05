@@ -89,7 +89,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-//            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
