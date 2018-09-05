@@ -79,7 +79,6 @@ fun Application.module() {
         }
 
         get("/{z}/{x}/{y_type}") {
-            println(call.parameters)
             val y_list = call.parameters["y_type"]!!.split('.')
 
             call.respondBytes(contentType = ContentType.Application.GZip) {
