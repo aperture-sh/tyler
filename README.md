@@ -14,7 +14,7 @@
 
 ### Configuration
 
-The server can be configured using the `resources/application.con` HOCON file.
+The server can be configured using the `resources/application.conf` HOCON file.
 Available storage types are `sqlite`, `mongo`, `fs`. 
 
 Be aware the filesystem option (`fs`) utilizes the harddisk and can store millions of files.
