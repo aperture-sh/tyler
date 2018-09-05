@@ -1,5 +1,6 @@
 package io.marauder.tyler.parser
 
+import com.google.gson.Gson
 import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Tile
@@ -71,6 +72,25 @@ fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : B
         encoder.addFeature("de.fraunhofer.igd.main", it.properties, geom)
     }
 
+
+    return encoder.encode()
+}
+
+fun mergeTiles(t1: ByteArray, t2: ByteArray, z: Int, x: Int, y: Int) : ByteArray {
+    val decoder = VectorTileDecoder()
+    decoder.isAutoScale = false
+
+    val encoder = VectorTileEncoder(4096, 8, false)
+
+    val oldTile = decoder.decode(t1)
+    oldTile.forEach {
+        encoder.addFeature("de.fraunhofer.igd.main", it.attributes, it.geometry)
+    }
+
+    val newTile = decoder.decode(t1)
+    newTile.forEach {
+        encoder.addFeature("de.fraunhofer.igd.main", it.attributes, it.geometry)
+    }
 
     return encoder.encode()
 }
