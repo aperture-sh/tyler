@@ -2,8 +2,11 @@ package io.marauder.store
 
 import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
+import io.marauder.tyler.parser.mergeTiles
 import io.marauder.tyler.store.StoreClient
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.zip.GZIPOutputStream
 
 class StoreClientFS(val folder: String) : StoreClient {
 
@@ -17,7 +20,11 @@ class StoreClientFS(val folder: String) : StoreClient {
 
     override fun setTile(x: Int, y: Int, z: Int, tile: ByteArray) {
         File("$folder/$z/$x").mkdirs()
-        File("$folder/$z/$x/$y.mvt").writeBytes(tile)
+        val out = ByteArrayOutputStream()
+        val gzip = GZIPOutputStream(out)
+        gzip.write(tile)
+        gzip.close()
+        File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
     }
 
     override fun getTile(x: Int, y: Int, z: Int): ByteArray? {
@@ -42,7 +49,15 @@ class StoreClientFS(val folder: String) : StoreClient {
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: ByteArray) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (exists(x, y, z)) {
+            val out = ByteArrayOutputStream()
+            val gzip = GZIPOutputStream(out)
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.close()
+            File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
+        } else {
+            setTile(x, y, z, tile)
+        }
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection) {
@@ -52,4 +67,7 @@ class StoreClientFS(val folder: String) : StoreClient {
     override fun clearStore() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    private fun exists(x: Int, y: Int, z: Int) : Boolean =
+            File("$folder/$z/$x/$y.mvt").exists()
 }
