@@ -1,6 +1,5 @@
 package io.marauder.tyler.parser
 
-import com.google.gson.Gson
 import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Tile
@@ -9,6 +8,7 @@ import no.ecc.vectortile.VectorTileEncoder
 
 
 val gf = org.locationtech.jts.geom.GeometryFactory()
+const val LAYER_NAME = "io.marauder.main"
 
 fun createTile(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): ByteArray {
     val encoder = VectorTileEncoder(4096, 8, false)
@@ -21,7 +21,7 @@ fun createTile(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): By
             "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
             else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
         }
-        encoder.addFeature("de.fraunhofer.igd.main", it.properties, geom)
+        encoder.addFeature(LAYER_NAME, it.properties, geom)
     }
 
     return encoder.encode()
@@ -41,7 +41,7 @@ fun createTileTransform(featureCollection: FeatureCollection, z: Int, x: Int, y:
             "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
             else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
         }
-        encoder.addFeature("de.fraunhofer.igd.main", it.properties, geom)
+        encoder.addFeature(LAYER_NAME, it.properties, geom)
     }
 
     return encoder.encode()
@@ -56,7 +56,7 @@ fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : B
 
     val oldTile = decoder.decode(t1)
     oldTile.forEach {
-        encoder.addFeature("de.fraunhofer.igd.main", it.attributes, it.geometry)
+        encoder.addFeature(LAYER_NAME, it.attributes, it.geometry)
     }
 
     transformTile(
@@ -69,7 +69,7 @@ fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : B
             "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
             else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
         }
-        encoder.addFeature("de.fraunhofer.igd.main", it.properties, geom)
+        encoder.addFeature(LAYER_NAME, it.properties, geom)
     }
 
 
@@ -84,12 +84,12 @@ fun mergeTiles(t1: ByteArray, t2: ByteArray, z: Int, x: Int, y: Int) : ByteArray
 
     val oldTile = decoder.decode(t1)
     oldTile.forEach {
-        encoder.addFeature("de.fraunhofer.igd.main", it.attributes, it.geometry)
+        encoder.addFeature(LAYER_NAME, it.attributes, it.geometry)
     }
 
     val newTile = decoder.decode(t1)
     newTile.forEach {
-        encoder.addFeature("de.fraunhofer.igd.main", it.attributes, it.geometry)
+        encoder.addFeature(LAYER_NAME, it.attributes, it.geometry)
     }
 
     return encoder.encode()
