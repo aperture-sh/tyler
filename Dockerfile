@@ -1,3 +1,10 @@
+FROM openjdk:8-jdk-alpine AS build
+
+ADD . /build
+WORKDIR /build
+
+RUN ./gradlew shadowJar
+
 FROM openjdk:8-jre-alpine
 
 ENV APPLICATION_USER ktor
@@ -10,7 +17,7 @@ USER $APPLICATION_USER
 
 EXPOSE 23513/tcp
 
-COPY ./build/libs/tyler-fat.jar /app/tyler-fat.jar
+COPY --from=build /build/build/libs/tyler-fat.jar /app/tyler-fat.jar
 WORKDIR /app
 
 CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-XX:InitialRAMFraction=2", "-XX:MinRAMFraction=2", "-XX:MaxRAMFraction=2", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=100", "-XX:+UseStringDeduplication", "-jar", "tyler-fat.jar"]

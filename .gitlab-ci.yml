@@ -11,8 +11,7 @@ build:
   image: openjdk:8
   stage: build
   script:
-    - apt-get update && apt-get -y install git build-essential
-    - ./gradlew build && ./gradlew shadowJar
+    - ./gradlew build
   artifacts:
     paths:
     - build
