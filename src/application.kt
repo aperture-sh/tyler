@@ -12,6 +12,8 @@ import io.ktor.features.*
 import org.slf4j.event.*
 import java.time.*
 import io.ktor.gson.*
+import io.marauder.store.StoreClientFS
+import io.marauder.store.StoreClientMongo
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.parser.Tiler
 import io.marauder.tyler.parser.projectFeatures
@@ -27,10 +29,18 @@ lateinit var store: StoreClient;
 
 @Suppress("unused") // Referenced in application.conf
 fun Application.module() {
-    store = StoreClientSQLite("./storage")
-
-    install(Locations) {
+    when (environment.config.propertyOrNull("ktor.application.store.type")?.getString() ?: "sqlite") {
+        "sqlite" -> store = StoreClientSQLite(environment.config.propertyOrNull("ktor.application.store.sqlite.db")?.getString() ?: "./storage")
+        "mongo" -> store = StoreClientMongo(
+                environment.config.propertyOrNull("ktor.application.store.mongo.db")?.getString() ?: "marauder",
+                environment.config.propertyOrNull("ktor.application.store.mongo.host")?.getString() ?: "localhost",
+                environment.config.propertyOrNull("ktor.application.store.mongo.port")?.getString()?.toInt() ?: 27017
+                )
+        "fs" -> store = StoreClientFS(environment.config.propertyOrNull("ktor.application.store.fs.folder")?.getString() ?: "./tree")
     }
+
+//    install(Locations) {
+//    }
 
     install(Compression) {
         gzip {
