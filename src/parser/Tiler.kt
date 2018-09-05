@@ -38,6 +38,7 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
                 println("$tileCount tiles queued")
             }
             val t = q.poll()
+            //TODO: to every split in a new coroutine and join them
             split(t.featureCollection, t.x, t.y, t.z)
         }
         println("finished split: ${input.features.size} features")
