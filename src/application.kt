@@ -86,6 +86,14 @@ fun Application.module() {
             }
         }
 
+        delete("/") {
+            launch {
+                store.clearStore()
+            }
+
+            call.respondText("clearing store started", contentType = ContentType.Text.Plain)
+        }
+
 
         static("/static") {
             resources("static")
