@@ -87,7 +87,7 @@ fun mergeTiles(t1: ByteArray, t2: ByteArray, z: Int, x: Int, y: Int) : ByteArray
         encoder.addFeature(LAYER_NAME, it.attributes, it.geometry)
     }
 
-    val newTile = decoder.decode(t1)
+    val newTile = decoder.decode(t2)
     newTile.forEach {
         encoder.addFeature(LAYER_NAME, it.attributes, it.geometry)
     }
