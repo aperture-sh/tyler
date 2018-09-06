@@ -8,6 +8,7 @@ import com.mongodb.client.model.Filters
 import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.toID
+import io.marauder.tyler.parser.createTileTransform
 import io.marauder.tyler.parser.mergeTiles
 import io.marauder.tyler.store.StoreClient
 import kotlinx.coroutines.experimental.launch
@@ -77,7 +78,19 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (exists(x, y, z)) {
+            val out = ByteArrayOutputStream()
+            val gzip = GZIPOutputStream(out)
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.close()
+            launch {
+                val up = getGrid().openUploadStream(toID(z, x, y).toString())
+                up.write(out.toByteArray())
+                up.close()
+            }
+        } else {
+            setTile(x, y, z, createTileTransform(tile, z, x, y))
+        }
     }
 
 

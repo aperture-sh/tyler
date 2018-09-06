@@ -3,6 +3,7 @@ package io.marauder.tyler.store
 import com.google.gson.Gson
 import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
+import io.marauder.tyler.parser.createTileTransform
 import io.marauder.tyler.parser.mergeTiles
 import no.ecc.vectortile.VectorTileDecoder
 import no.ecc.vectortile.VectorTileEncoder
@@ -104,7 +105,7 @@ class StoreClientSQLite(db: String) : StoreClient {
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection) {
-        if (exists(x, y, z) || true) {
+        if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
             gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
@@ -117,7 +118,7 @@ class StoreClientSQLite(db: String) : StoreClient {
             stmt.execute()
             stmt.close()
         } else {
-//            setTile(x, y, z, tile)
+            setTile(x, y, z, createTileTransform(tile, z, x, y))
         }
     }
 

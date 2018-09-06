@@ -48,7 +48,7 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
         val z2 = 1 shl z
         if (z >= minZoom) {
             runBlocking {
-                client.updateTile(x, y, z, createTileTransform(f, z, x, y))
+                client.updateTile(x, y, z, f)
             }
         }
 
