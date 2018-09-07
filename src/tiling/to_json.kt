@@ -2,8 +2,8 @@ package io.marauder.tyler.parser
 
 import io.marauder.tyler.models.Feature
 
-fun merge(f: List<Feature>) =
-        """{
+fun toJson(f: List<Feature>) =
+"""{
   "type": "FeatureCollection",
   "features": [
         ${f.fold("") {l,r -> "$l,${toJson(r)}"}.substring(1)}
