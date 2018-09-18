@@ -60,7 +60,7 @@ fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : B
     }
 
     transformTile(
-            Tile(t2, 4096, x, y, 1 shl z)
+            Tile(t2, 1 shl z, x, y, 4096)
     ).featureCollection.features.forEach {
         val geom = when (it.geometry.type) {
             "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
