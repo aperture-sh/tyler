@@ -17,7 +17,7 @@ build:
     - build
     expire_in: 30 minutes
 
-build_image:
+build_image_master:
   image: docker:stable
   stage: build
   services:
@@ -32,34 +32,14 @@ build_image:
   script:
   - docker pull $UPSTREAM_IMAGE:latest || true
   - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:latest .
-
-push_image_master:
-  image: docker:stable
-  stage: deploy
-  dependencies:
-  - build_image
-  services:
-  - docker:dind
-  variables:
-    UPSTREAM_IMAGE: $CI_REGISTRY/marauder/$CI_PROJECT_NAME
-    DOCKER_HOST: tcp://docker:2375/
-  # Improve performance by enable d_type support for backing xfs filesystem
-  #   DOCKER_DRIVER: overlay2
-  before_script:
-  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-  script:
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-  - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   - docker push $CI_REGISTRY_IMAGE:latest
-  - echo $CI_COMMIT_REF_NAME
   only:
   - master@marauder/tyler
 
-push_image_branches:
+build_image_branches:
   image: docker:stable
-  stage: deploy
-  dependencies:
-  - build_image
+  stage: build
   services:
   - docker:dind
   variables:
@@ -70,4 +50,9 @@ push_image_branches:
   before_script:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
   script:
+  - docker pull $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME || true
+  - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
   - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+  except:
+  - master@marauder/tyler
