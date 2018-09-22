@@ -3,7 +3,7 @@ package io.marauder.tyler.parser
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Tile
 import io.marauder.tyler.store.StoreClient
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5) {

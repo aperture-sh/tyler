@@ -11,7 +11,8 @@ import io.marauder.tyler.models.toID
 import io.marauder.tyler.parser.createTileTransform
 import io.marauder.tyler.parser.mergeTiles
 import io.marauder.tyler.store.StoreClient
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -35,7 +36,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
 
         gzip.write(tile)
         gzip.close()
-        launch {
+        GlobalScope.launch {
             val up = getGrid().openUploadStream(toID(z, x, y).toString())
             up.write(out.toByteArray())
             up.close()
