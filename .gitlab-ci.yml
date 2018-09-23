@@ -51,7 +51,7 @@ build_image_branches:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
   script:
   - docker pull $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME || true
-  - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
+  - docker build --cache-from $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
   - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
   except:
