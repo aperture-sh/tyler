@@ -35,7 +35,7 @@ build_image_master:
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
   - docker push $CI_REGISTRY_IMAGE:latest
   only:
-  - master@marauder/tyler
+  - master
 
 build_image_branches:
   image: docker:stable
@@ -55,4 +55,4 @@ build_image_branches:
   - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
   except:
-  - master@marauder/tyler
+  - master
