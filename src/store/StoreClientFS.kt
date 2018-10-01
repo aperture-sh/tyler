@@ -30,7 +30,7 @@ class StoreClientFS(val folder: String) : StoreClient {
 
     override fun getTile(x: Int, y: Int, z: Int): ByteArray? {
         val file = File("${folder}/$z/$x/$y.mvt")
-        return file.readBytes()
+        return if (file.exists()) file.readBytes() else null
     }
 
     override fun getTileJson(x: Int, y: Int, z: Int): String? {
@@ -74,7 +74,7 @@ class StoreClientFS(val folder: String) : StoreClient {
     }
 
     override fun clearStore() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        File(folder).deleteRecursively()
     }
 
     private fun exists(x: Int, y: Int, z: Int) : Boolean =
