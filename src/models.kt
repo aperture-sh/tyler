@@ -11,4 +11,4 @@ data class Tile(val featureCollection: FeatureCollection, val z: Int, val x: Int
 
 typealias BoundingBox = Pair<Pair<Double, Double>, Pair<Double, Double>>
 
-fun toID(z: Int, x: Int, y: Int) = (((1 shl z) * y + x) * 32) + z;
+fun toID(z: Int, x: Int, y: Int) = (((1 shl z) * y + x) * 32) + z
