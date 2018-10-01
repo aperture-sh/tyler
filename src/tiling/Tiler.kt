@@ -1,50 +1,31 @@
 package io.marauder.tyler.parser
 
 import io.marauder.tyler.models.FeatureCollection
-import io.marauder.tyler.models.Tile
 import io.marauder.tyler.store.StoreClient
-import kotlinx.coroutines.runBlocking
-import java.util.*
+import kotlinx.coroutines.*
 
 class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5) {
 
     val BUFFER = 64
     val EXTENT = 4096
 
-    val q: Queue<Tile> = LinkedList()
-    var tileCount = 0
-
-    /**
-     * json file: ~500MB, 433280 Features (1 Geometry/Feature)
-     * read, project, bbox: ~1min
-     * clip, save to sqlite: ~3min
-     */
-    fun tiler(input: FeatureCollection) {
+    suspend fun tiler(input: FeatureCollection) {
         println("start split: ${input.features.size} features")
-        //TODO: wrap -> left + 1 (offset), right - 1 (offset)
 
-        /*val buffer: Double = BUFFER.toDouble() / EXTENT
+        //wrap -> left + 1 (offset), right - 1 (offset)
+        val buffer: Double = BUFFER.toDouble() / EXTENT
         val left = clip(input, 1.0, -1 -buffer, buffer, 0)
         val right = clip(input, 1.0, 1 -buffer, 2+buffer, 0)
-        val merged = clip(input, 1.0, -buffer, 1+buffer, 0)*/
+        val center = clip(input, 1.0, -buffer, 1+buffer, 0)
 
-        q.offer(Tile(input, 0, 0, 0, 4096))
-        ++tileCount
+        val merged = FeatureCollection(features = left.features + right.features + center.features)
 
+        split(merged, 0, 0, 0).join()
 
-        while (q.isNotEmpty()) {
-            ++tileCount
-            if (tileCount % 250 == 0) {
-                println("$tileCount tiles queued")
-            }
-            val t = q.poll()
-            //TODO: to every split in a new coroutine and join them
-            split(t.featureCollection, t.x, t.y, t.z)
-        }
         println("finished split: ${input.features.size} features")
     }
 
-    fun split(f: FeatureCollection, x: Int, y: Int, z: Int) {
+    fun split(f: FeatureCollection, z: Int, x: Int, y: Int): Job = GlobalScope.launch {
         val z2 = 1 shl z
         if (z >= minZoom) {
             runBlocking {
@@ -76,11 +57,14 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
                 br = clip(right, z2.toDouble(), y + k2, y + k4, 1)
             }
 
+            val jobs = mutableListOf<Job>()
+            if (tl.features.isNotEmpty()) jobs.add(split(tl, z + 1, x * 2, y * 2))
+            if (bl.features.isNotEmpty()) jobs.add(split(bl, z + 1, x * 2, y * 2 + 1))
+            if (tr.features.isNotEmpty()) jobs.add(split(tr, z + 1, x * 2 + 1, y * 2))
+            if (br.features.isNotEmpty()) jobs.add(split(br, z + 1, x * 2 + 1, y * 2 + 1))
 
-            if (tl.features.isNotEmpty()) q.offer(Tile(tl, z + 1, x * 2, y * 2, EXTENT))
-            if (bl.features.isNotEmpty()) q.offer(Tile(bl, z + 1, x * 2, y * 2 + 1, EXTENT))
-            if (tr.features.isNotEmpty()) q.offer(Tile(tr, z + 1, x * 2 + 1, y * 2, EXTENT))
-            if (br.features.isNotEmpty()) q.offer(Tile(br, z + 1, x * 2 + 1, y * 2 + 1, EXTENT))
+            jobs.forEach { it.join() }
+
         }
     }
 }
