@@ -8,7 +8,11 @@ fun projectFeatures(featureCollection: FeatureCollection): FeatureCollection =
 
 fun projectFeature(f: Feature): Feature {
     f.geometry.coordinates[0] = f.geometry.coordinates[0].map { p -> projectPoint(p) }
-    return calcBbox(f)
+    return Feature (
+            type = f.type,
+            properties = f.properties,
+            geometry = f.geometry
+    )
 }
 
 fun projectPoint(p: List<Double>): List<Double> {
@@ -24,27 +28,25 @@ fun projectPoint(p: List<Double>): List<Double> {
     return listOf(x, y)
 }
 
-fun calcBbox(f: Feature): Feature {
-     f.geometry.coordinates.forEach { p ->
+fun calcBbox(f: Feature) {
+     f.geometry.coordinates[0].forEach { p ->
          //TODO: find a way to store bbox
-         /*f.min[0] = Math.min(p[0], f.min[0])
-         f.max[0] = Math.max(p[0], f.max[0])
-         f.min[1] = Math.min(p[1], f.min[1])
-         f.max[1] = Math.max(p[1], f.max[1])*/
+         f.bbox[0] = Math.min(p[0], f.bbox[0])
+         f.bbox[2] = Math.max(p[0], f.bbox[2])
+         f.bbox[1] = Math.min(p[1], f.bbox[1])
+         f.bbox[3] = Math.max(p[1], f.bbox[3])
      }
-    return f
 }
 
-fun calcBbox(f: List<Feature>): BoundingBox {
-    val bbox = Pair(Pair(Double.MAX_VALUE, Double.MAX_VALUE), Pair(Double.MIN_VALUE, Double.MIN_VALUE))
-    f.forEach {
+fun calcBbox(f: FeatureCollection) {
+    f.features.forEach {
+        calcBbox(it)
         //TODO: needs bboxes per feature
-        /*bbox.min[0] = Math.min(it.min[0], bbox.min[0])
-        bbox.max[0] = Math.max(it.max[0], bbox.max[0])
-        bbox.min[1] = Math.min(it.min[1], bbox.min[1])
-        bbox.max[1] = Math.max(it.max[1], bbox.max[1])*/
+        f.bbox[0] = Math.min(it.bbox[0], f.bbox[0])
+        f.bbox[2] = Math.max(it.bbox[2], f.bbox[2])
+        f.bbox[1] = Math.min(it.bbox[1], f.bbox[1])
+        f.bbox[3] = Math.max(it.bbox[3], f.bbox[3])
     }
-    return bbox
 }
 
 fun intersects(b1: BoundingBox, b2: BoundingBox): Boolean =

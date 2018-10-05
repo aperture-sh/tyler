@@ -36,11 +36,11 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
 
         gzip.write(tile)
         gzip.close()
-        GlobalScope.launch {
+//        GlobalScope.launch {
             val up = getGrid().openUploadStream(toID(z, x, y).toString())
             up.write(out.toByteArray())
             up.close()
-        }
+//        }
     }
 
     override fun getTile(x: Int, y: Int, z: Int): ByteArray? =
@@ -51,7 +51,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
     }
 
     override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<BoundingBox>): ByteArray? {
-        return getTile(x, y, z)
+        return if (exists(x, y, z)) getTile(x, y, z) else null
     }
 
     override fun deleteTile(x: Int, y: Int, z: Int) {
@@ -84,11 +84,11 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
             val gzip = GZIPOutputStream(out)
             gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
             gzip.close()
-            GlobalScope.launch {
+//            GlobalScope.launch {
                 val up = getGrid().openUploadStream(toID(z, x, y).toString())
                 up.write(out.toByteArray())
                 up.close()
-            }
+//            }
         } else {
             setTile(x, y, z, createTileTransform(tile, z, x, y))
         }

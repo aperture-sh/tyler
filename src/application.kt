@@ -20,6 +20,7 @@ import io.marauder.store.StoreClientFS
 import io.marauder.store.StoreClientMongo
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.parser.Tiler
+import io.marauder.tyler.parser.Tiler2
 import io.marauder.tyler.parser.projectFeatures
 import io.marauder.tyler.store.StoreClient
 import io.marauder.tyler.store.StoreClientSQLite
@@ -27,6 +28,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
 import java.io.InputStreamReader
+import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.main(args)
 
@@ -96,8 +98,20 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.mai
                 val input = Gson().fromJson(InputStreamReader(call.receiveStream()), FeatureCollection::class.java)
                 GlobalScope.launch(newSingleThreadContext("tiling-process-1")) {
                     //TODO: start tiling in independent thread
-                    val tyler = Tiler(store, 0, 15)
-                    tyler.tiler(projectFeatures(input))
+                    if (call.parameters["clear"] != null) {
+                        println("clear")
+                        store.clearStore()
+                    }
+
+
+                    val time = measureTimeMillis {
+                        launch {
+                            val tyler = Tiler2(store, 10, 17)
+                            tyler.tiler(projectFeatures(input))
+                        }.join()
+
+                    }
+                    println("time: $time")
                 }
 
                 call.respondText("tiling started", contentType = ContentType.Text.Plain)

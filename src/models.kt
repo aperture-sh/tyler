@@ -1,9 +1,13 @@
 package io.marauder.tyler.models
 
-data class FeatureCollection(val type: String = "FeatureCollection", val features: List<Feature> = emptyList())
+data class FeatureCollection(val type: String = "FeatureCollection",
+                             val features: List<Feature> = emptyList(),
+                             val bbox: MutableList<Double> = mutableListOf(Double.MAX_VALUE, Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
+)
 data class Feature(val type: String = "Feature",
                    val geometry: Geometry,
-                   val properties: Map<String, Any> = emptyMap()
+                   val properties: Map<String, Any> = emptyMap(),
+                   val bbox: MutableList<Double> = mutableListOf(Double.MAX_VALUE, Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
 )
 data class Geometry(val type: String, var coordinates: MutableList<List<List<Double>>>)
 

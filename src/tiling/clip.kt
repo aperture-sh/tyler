@@ -4,17 +4,35 @@ import io.marauder.tyler.models.Feature
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Geometry
 
-fun clip(f: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int) : FeatureCollection =
-    FeatureCollection(features =
-        f.features.filter { f ->
-        val scaleK2 = k2 / scale
-        val scaleK1 = k1 / scale
-//        val min = f.min[axis]
-//        val max = f.max[axis]
+fun fcOutOfBounds(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int) : Int {
+    val scaleK1 = k1 / scale
+    val scaleK2 = k2 / scale
+    val minFC = fc.bbox[axis]
+    val maxFC = fc.bbox[2 + axis]
+    if (minFC >= scaleK2) return 1
+    if (maxFC <= scaleK1) return 2
+    return 0
+}
+
+fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int) : FeatureCollection {
+//    println("scale: $scale, k1: $k1, k2: $k2, axis: $axis")
+    val scaleK2 = k2 / scale
+    val scaleK1 = k1 / scale
+    val minFC = fc.bbox[axis]
+    val maxFC = fc.bbox[2 + axis]
+
+    if (minFC >= scaleK2 || maxFC <= scaleK1) {
+//        println("kil")
+        return FeatureCollection()
+    }
+    return FeatureCollection(features =
+    fc.features.filter { f ->
+        val min = f.bbox[axis]
+        val max = f.bbox[2 + axis]
 //        condition for trivia reject
-//        !(min > scaleK2 || max < scaleK1)
+        !(min > scaleK2 || max < scaleK1)
         //TODO: reject when complete collection or complete features bboxes are out of bounds
-        true
+//        true
     }.flatMap { f ->
         if (f.geometry.coordinates.isEmpty()) {
             listOf()
@@ -24,7 +42,7 @@ fun clip(f: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int)
 //            listOf(f)
         } else {
             //TODO: adapt min/max during clipping
-            val geom = clipGeometry(f.geometry, k1 / scale, k2 / scale, axis)
+            val geom = clipGeometry(f.geometry, scaleK1, scaleK2, axis)
             if (geom.coordinates[0][0].isNotEmpty()) {
                 listOf(Feature(
                         f.type,
@@ -39,6 +57,7 @@ fun clip(f: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int)
         }
     }
     )
+}
 
 fun clipGeometry(g: Geometry, k1: Double, k2: Double, axis: Int): Geometry {
     val slice = mutableListOf<List<Double>>()
