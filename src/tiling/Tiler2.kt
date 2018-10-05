@@ -10,9 +10,12 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
     val BUFFER = 64
     val EXTENT = 4096
 
+    val CPUS = 4
+
     suspend fun tiler(input: FeatureCollection) {
-        println("start split: ${input.features.size} features")
+        println("calculating bounding box: ${input.features.size} features")
         calcBbox(input)
+        println("start split")
 
         //wrap -> left + 1 (offset), right - 1 (offset)
         /*val buffer: Double = BUFFER.toDouble() / EXTENT
@@ -24,8 +27,8 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
 
 //        split(input, 0, 0, 0).join()
 
-        (minZoom..maxZoom).chunked(4).forEach {
-//            println(it)
+        (minZoom..maxZoom).chunked(CPUS).forEach {
+            println("\nzoom level in parallel: $it")
             val jobs = mutableListOf<Job>()
             it.forEach { z ->
 //                traverseZoom(input, z)
