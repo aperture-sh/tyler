@@ -28,7 +28,7 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
 //        split(input, 0, 0, 0).join()
 
         (minZoom..maxZoom).chunked(CPUS).forEach {
-            println("\nzoom level in parallel: $it")
+            println("\rzoom level in parallel: $it")
             val jobs = mutableListOf<Job>()
             it.forEach { z ->
 //                traverseZoom(input, z)
@@ -36,7 +36,7 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
             }
             jobs.forEach { job -> job.join() }
         }
-        println("\nfinished split: ${input.features.size} features")
+        println("\rfinished split: ${input.features.size} features")
     }
 
     fun traverseZoom(f: FeatureCollection, z: Int) = GlobalScope.launch {
