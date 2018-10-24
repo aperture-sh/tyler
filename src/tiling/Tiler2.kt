@@ -10,15 +10,21 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
     val BUFFER = 64
     val EXTENT = 4096
 
-    val CPUS = 4
+    val CPUS = 2
+    val BULK = 500000
+    val MAX = Int.MAX_VALUE
 
     suspend fun tiler(input: FeatureCollection) {
-        println("calculating bounding box: ${input.features.size} features")
-        calcBbox(input)
-        println("start split")
 
-        //wrap -> left + 1 (offset), right - 1 (offset)
-        /*val buffer: Double = BUFFER.toDouble() / EXTENT
+        input.features.take(MAX).chunked(BULK).forEach {
+            val bulk = FeatureCollection(features = it)
+
+            println("calculating bounding box: ${bulk.features.size} features")
+            calcBbox(bulk)
+            println("start split")
+
+            //wrap -> left + 1 (offset), right - 1 (offset)
+            /*val buffer: Double = BUFFER.toDouble() / EXTENT
         val left = clip(input, 1.0, -1 -buffer, buffer, 0)
         val right = clip(input, 1.0, 1 -buffer, 2+buffer, 0)
         val center = clip(input, 1.0, -buffer, 1+buffer, 0)*/
@@ -27,16 +33,17 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
 
 //        split(input, 0, 0, 0).join()
 
-        (minZoom..maxZoom).chunked(CPUS).forEach {
-            println("\rzoom level in parallel: $it")
-            val jobs = mutableListOf<Job>()
-            it.forEach { z ->
-//                traverseZoom(input, z)
-                jobs.add(traverseZoom(input, z))
+            (minZoom..maxZoom).chunked(CPUS).forEach {
+                println("\rzoom level in parallel: $it")
+                val jobs = mutableListOf<Job>()
+                it.forEach { z ->
+                    //                traverseZoom(input, z)
+                    jobs.add(traverseZoom(bulk, z))
+                }
+                jobs.forEach { job -> job.join() }
             }
-            jobs.forEach { job -> job.join() }
+            println("\rfinished split: ${bulk.features.size} features")
         }
-        println("\rfinished split: ${input.features.size} features")
     }
 
     fun traverseZoom(f: FeatureCollection, z: Int) = GlobalScope.launch {
@@ -57,21 +64,22 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
         val k1 = 0.5 * BUFFER / EXTENT
         val k3 = 1 + k1
 
-        val vertical = clip(f, z2.toDouble(), y + k1, y + k3, 1)
+//        val vertical = clip(f, z2.toDouble(), y + k1, y + k3, 1)
+        val clipped = clip(f, z2.toDouble(), x - k1, x + k3, y + k1, y + k3)
 
-        if (vertical.features.isNotEmpty()) {
-            calcBbox(vertical)
-            val horizontal = clip(f, z2.toDouble(), x - k1, x + k3, 0)
+        if (clipped.features.isNotEmpty()) {
+            calcBbox(clipped)
+//            val horizontal = clip(f, z2.toDouble(), x - k1, x + k3, 0)
 
-            if (horizontal.features.isNotEmpty()) {
+//            if (horizontal.features.isNotEmpty()) {
                 print("\rencode: $z/$x/$y")
 //            println(vertical.features)
 
                 runBlocking {
-                    client.updateTile(x, y, z, horizontal)
+                    client.updateTile(x, y, z, clipped)
                 }
             }
         }
 
-    }
+
 }

@@ -59,6 +59,58 @@ fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int
     )
 }
 
+fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, k3: Double, k4: Double) : FeatureCollection {
+//    println("scale: $scale, k1: $k1, k2: $k2, axis: $axis")
+    val scaleK1 = k1 / scale
+    val scaleK2 = k2 / scale
+    val scaleK3 = k3 / scale
+    val scaleK4 = k4 / scale
+    val minFCx = fc.bbox[0]
+    val maxFCx = fc.bbox[2 + 0]
+    val minFCy = fc.bbox[1]
+    val maxFCy = fc.bbox[2 + 1]
+
+    if (minFCx >= scaleK2 || maxFCx <= scaleK1 || minFCy >= scaleK4 || maxFCy <= scaleK3) {
+//        println("kil")
+        return FeatureCollection()
+    }
+    return FeatureCollection(features =
+    fc.features.filter { f ->
+        val minX = f.bbox[0]
+        val maxX = f.bbox[2 + 0]
+        val minY = f.bbox[1]
+        val maxY = f.bbox[2 + 1]
+//        condition for trivia reject
+        !(minX > scaleK2 || maxX < scaleK1 || minY > scaleK4 || maxY < scaleK3)
+        //TODO: reject when complete collection or complete features bboxes are out of bounds
+//        true
+    }.flatMap { f ->
+        if (f.geometry.coordinates.isEmpty()) {
+            listOf()
+            //TODO: accept everyhing when bbox matches all
+            //condition for trivia accept
+//        } else if (min >= scaleK1 && max <= scaleK2) {
+//            listOf(f)
+        } else {
+            //TODO: adapt min/max during clipping
+            val geomX = clipGeometry(f.geometry, scaleK1, scaleK2, 0)
+            val geom = clipGeometry(geomX, scaleK3, scaleK4, 1)
+            if (geom.coordinates[0][0].isNotEmpty()) {
+                listOf(Feature(
+                        f.type,
+                        geom,
+                        f.properties
+                )
+                )
+            } else {
+                listOf()
+            }
+
+        }
+    }
+    )
+}
+
 fun clipGeometry(g: Geometry, k1: Double, k2: Double, axis: Int): Geometry {
     val slice = mutableListOf<List<Double>>()
     end@for(i in g.coordinates[0].indices) {
