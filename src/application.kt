@@ -105,7 +105,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.mai
 
 
                     val time = measureTimeMillis {
-                            val tyler = Tiler2(store, 0, 17)
+                            val tyler = Tiler2(store, 0, 15)
                             tyler.tiler(projectFeatures(input))
                     }
                     println("time: $time")
