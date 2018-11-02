@@ -11,7 +11,9 @@ ENV APPLICATION_USER ktor
 RUN adduser -D -g '' $APPLICATION_USER
 
 RUN mkdir /app
+RUN mkdir /storage
 RUN chown -R $APPLICATION_USER /app
+RUN chown -R $APPLICATION_USER /storage
 
 USER $APPLICATION_USER
 
@@ -20,4 +22,4 @@ EXPOSE 23513/tcp
 COPY --from=build /build/build/libs/tyler-fat.jar /app/tyler-fat.jar
 WORKDIR /app
 
-CMD ["java", "-server", "-Xmx15G", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-XX:InitialRAMFraction=2", "-XX:MinRAMFraction=2", "-XX:MaxRAMFraction=2", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=100", "-XX:+UseStringDeduplication", "-jar", "tyler-fat.jar"]
+CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-XX:InitialRAMFraction=2", "-XX:MinRAMFraction=2", "-XX:MaxRAMFraction=2", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=100", "-XX:+UseStringDeduplication", "-jar", "tyler-fat.jar"]

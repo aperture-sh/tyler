@@ -27,6 +27,7 @@ import io.marauder.tyler.store.StoreClientSQLite
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
+import java.io.File
 import java.io.InputStreamReader
 import kotlin.system.measureTimeMillis
 
@@ -52,8 +53,11 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.mai
                     environment.config.propertyOrNull("ktor.application.store.mongo.port")?.getString()?.toInt()
                             ?: 27017
             )
-            "fs" -> store = StoreClientFS(environment.config.propertyOrNull("ktor.application.store.fs.folder")?.getString()
-                    ?: "./tree")
+            "fs" -> {
+                val dir = environment.config.propertyOrNull("ktor.application.store.fs.folder")?.getString() ?: "./tree"
+                File(dir).mkdirs()
+                store = StoreClientFS(dir)
+            }
         }
 
 //    install(Locations) {
