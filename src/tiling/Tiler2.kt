@@ -10,7 +10,7 @@ class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 
     val BUFFER = 64
     val EXTENT = 4096
 
-    val CPUS = 2
+    val CPUS = 1
     val BULK = 500000
     val MAX = Int.MAX_VALUE
 
