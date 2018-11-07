@@ -20,7 +20,7 @@ USER $APPLICATION_USER
 EXPOSE 23513/tcp
 
 COPY --from=build /build/build/libs/tyler-fat.jar /app/tyler-fat.jar
-COPY --from=build /scripts/start.sh /app/start.sh
+COPY --from=build /build/scripts/start.sh /app/start.sh
 WORKDIR /app
 
 ENTRYPOINT ./start.sh
