@@ -31,7 +31,7 @@ import java.io.File
 import java.io.InputStreamReader
 import kotlin.system.measureTimeMillis
 
-fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.main(args)
+fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 /*fun main(args: Array<String>) {
     //io.ktor.server.netty.main(args) // Manually using Netty's DevelopmentEngine

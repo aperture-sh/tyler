@@ -1,6 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.3.0'
-    ext.ktor_version = '0.9.5-rc13'
+    ext.ktor_version = '1.0.0-beta-3'
     ext.logback_version = '1.2.1'
 
     repositories {
@@ -30,9 +30,7 @@ sourceSets {
 
 repositories {
     mavenCentral()
-
     jcenter()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
     maven { url 'https://kotlin.bintray.com/ktor' }
     maven {
         url 'https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases'
