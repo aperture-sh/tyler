@@ -3,6 +3,10 @@ FROM openjdk:8-jdk-alpine AS build
 ADD . /build
 WORKDIR /build
 
+ARG artifactory_user
+ARG artifactory_password
+ARG artifactory_contextUrl
+
 RUN ./gradlew shadowJar
 
 FROM openjdk:8-jre-alpine
