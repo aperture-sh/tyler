@@ -19,12 +19,12 @@ const val LAYER_NAME = "io.marauder.main"
 
 @ImplicitReflectionSerializer
 fun createTile(geoJSON: GeoJSON, z: Int, x: Int, y: Int): ByteArray {
-    return ProtoBuf.dump(encoder.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, LAYER_NAME))
+    return encoder.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, LAYER_NAME).toByteArray()
 }
 
 @ImplicitReflectionSerializer
 fun createTileTransform(geoJSON: GeoJSON, z: Int, x: Int, y: Int): ByteArray {
-    return ProtoBuf.dump(encoder.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, LAYER_NAME))
+    return encoder.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, LAYER_NAME).toByteArray()
 }
 
 fun mergeTiles(t1: ByteArray, t2: GeoJSON, z: Int, x: Int, y: Int) : ByteArray {
