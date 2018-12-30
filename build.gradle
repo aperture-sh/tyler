@@ -22,7 +22,7 @@ version '0.0.1'
 mainClassName = "io.ktor.server.netty.DevelopmentEngine"
 
 sourceSets {
-    main.kotlin.srcDirs = main.java.srcDirs = ['src']
+    main.kotlin.srcDirs = main.java.srcDirs = ['src/main/kotlin']
     test.kotlin.srcDirs = test.java.srcDirs = ['test']
     main.resources.srcDirs = ['resources']
     test.resources.srcDirs = ['testresources']
@@ -34,6 +34,14 @@ repositories {
     maven {
         url 'https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases'
     }
+    maven {
+        url "https://geocode.igd.fraunhofer.de:8081/artifactory/libs-snapshot-local"
+        credentials {
+            username "$username"
+            password "$password"
+        }
+    }
+
 }
 
 dependencies {
@@ -46,6 +54,8 @@ dependencies {
     compile "io.ktor:ktor-metrics:$ktor_version"
     compile "io.ktor:ktor-websockets:$ktor_version"
     compile "io.ktor:ktor-gson:$ktor_version"
+    
+    compile "io.marauder:engine:0.0.1-SNAPSHOT"
 
     compile group: 'org.mongodb', name: 'mongo-java-driver', version: '3.5.0'
     compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.20.1'

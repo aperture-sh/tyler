@@ -1,4 +1,4 @@
-package io.maurauder.tyler.parser
+package io.marauder.tyler.parser
 
 fun simplify(points: List<List<Double>>, sqTolerance: Double) : List<List<Double>> {
     if (points.isEmpty()) return listOf()

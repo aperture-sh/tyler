@@ -1,10 +1,12 @@
 package io.marauder.tyler.parser
 
+import io.marauder.Engine
 import io.marauder.tyler.models.BoundingBox
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Tile
 import no.ecc.vectortile.VectorTileDecoder
 import no.ecc.vectortile.VectorTileEncoder
+
 
 
 val gf = org.locationtech.jts.geom.GeometryFactory()
@@ -31,6 +33,8 @@ fun createTile(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): By
 fun createTileTransform(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): ByteArray {
     val encoder = VectorTileEncoder(4096, 8, false)
 
+    val enc = Engine()
+    
     transformTile(
             Tile(featureCollection, 1 shl z, x, y, 4096)
     ).featureCollection.features.map {

@@ -6,21 +6,16 @@ import io.ktor.response.*
 import io.ktor.request.*
 import io.ktor.routing.*
 import io.ktor.http.*
-import io.ktor.content.*
-import io.ktor.locations.*
 import io.ktor.features.*
 import org.slf4j.event.*
 import java.time.*
 import io.ktor.gson.*
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import io.marauder.store.StoreClientFS
 import io.marauder.store.StoreClientMongo
 import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.parser.Tiler
-import io.marauder.tyler.parser.Tiler2
 import io.marauder.tyler.parser.projectFeatures
 import io.marauder.tyler.store.StoreClient
 import io.marauder.tyler.store.StoreClientSQLite
@@ -109,7 +104,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 
                     val time = measureTimeMillis {
-                            val tyler = Tiler2(store, 0, 15)
+                            val tyler = Tiler(store, 2, 15)
                             tyler.tiler(projectFeatures(input))
                     }
                     println("time: $time")

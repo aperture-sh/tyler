@@ -1,5 +1,7 @@
 package io.marauder.tyler.models
 
+import io.marauder.models.GeoJSON
+
 data class FeatureCollection(val type: String = "FeatureCollection",
                              val features: List<Feature> = emptyList(),
                              val bbox: MutableList<Double> = mutableListOf(Double.MAX_VALUE, Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)

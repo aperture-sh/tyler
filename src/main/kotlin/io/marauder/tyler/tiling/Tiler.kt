@@ -5,12 +5,12 @@ import io.marauder.tyler.store.StoreClient
 import kotlinx.coroutines.*
 import kotlin.math.pow
 
-class Tiler2 (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5) {
+class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5) {
 
     val BUFFER = 64
     val EXTENT = 4096
 
-    val CPUS = 1
+    val CPUS = 2
     val BULK = 500000
     val MAX = Int.MAX_VALUE
 
