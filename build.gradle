@@ -35,10 +35,10 @@ repositories {
         url 'https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases'
     }
     maven {
-        url "https://geocode.igd.fraunhofer.de:8081/artifactory/libs-snapshot-local"
+        url = rootProject.hasProperty("art_url") ? "$art_url" : "$System.env.artifactory_contextUrl"
         credentials {
-            username "$username"
-            password "$password"
+            username = rootProject.hasProperty("art_username") ? "$art_username" : "$System.env.artifactory_user"
+            password = rootProject.hasProperty("art_password") ? "$art_password" : "$System.env.artifactory_password"
         }
     }
 
