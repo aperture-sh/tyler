@@ -1,17 +1,25 @@
-package io.marauder.tyler.parser
+package io.marauder.tyler.tiling
 
-import io.marauder.tyler.models.*
+import io.marauder.models.Feature
+import io.marauder.models.GeoJSON
+import io.marauder.models.Geometry
+import io.marauder.models.GeometryType
+import io.marauder.tyler.models.BoundingBox
+import io.marauder.tyler.models.Tile
 
-fun projectFeatures(featureCollection: FeatureCollection): FeatureCollection =
-        FeatureCollection(featureCollection.type, featureCollection.features.map { f -> projectFeature(f) })
+fun projectFeatures(featureCollection: GeoJSON): GeoJSON =
+        GeoJSON(featureCollection.type, featureCollection.features.map { f -> projectFeature(f) })
 
 
 fun projectFeature(f: Feature): Feature {
-    f.geometry.coordinates[0] = f.geometry.coordinates[0].map { p -> projectPoint(p) }
+    val geometry = when(f.geometry) {
+        is Geometry.Point -> Geometry.Point(GeometryType.Point, (f.geometry as Geometry.Point).let { projectPoint(it.coordinates) })
+        else -> TODO()
+    }
     return Feature (
             type = f.type,
             properties = f.properties,
-            geometry = f.geometry
+            geometry = geometry
     )
 }
 
@@ -29,16 +37,22 @@ fun projectPoint(p: List<Double>): List<Double> {
 }
 
 fun calcBbox(f: Feature) {
-     f.geometry.coordinates[0].forEach { p ->
-         //TODO: find a way to store bbox
-         f.bbox[0] = Math.min(p[0], f.bbox[0])
-         f.bbox[2] = Math.max(p[0], f.bbox[2])
-         f.bbox[1] = Math.min(p[1], f.bbox[1])
-         f.bbox[3] = Math.max(p[1], f.bbox[3])
-     }
+    when(f.geometry) {
+        is Geometry.Point -> calcBbox(listOf((f.geometry as Geometry.Point).coordinates), f.bbox)
+        else -> TODO()
+    }
 }
 
-fun calcBbox(f: FeatureCollection) {
+fun calcBbox(points: List<List<Double>>, bbox: MutableList<Double>) {
+    points.forEach {p ->
+        bbox[0] = Math.min(p[0], bbox[0])
+        bbox[2] = Math.max(p[0], bbox[2])
+        bbox[1] = Math.min(p[1], bbox[1])
+        bbox[3] = Math.max(p[1], bbox[3])
+    }
+}
+
+fun calcBbox(f: GeoJSON) {
     f.features.forEach {
         calcBbox(it)
         //TODO: needs bboxes per feature
@@ -59,13 +73,11 @@ fun includesPoint(b: BoundingBox, coord: List<Double>): Boolean =
         coord[0] < b.second.first && coord[0] > b.first.first && coord[1] < b.second.second && coord[1] > b.first.second
 
 fun transformTile(t: Tile) : Tile =
-        Tile(FeatureCollection(features = t.featureCollection.features.map {
+        Tile(GeoJSON(features = t.geojson.features.map {
             Feature(
+                    it.id,
                     it.type,
-                    Geometry(
-                            it.geometry.type,
-                            mutableListOf(it.geometry.coordinates[0].map { transformPoint(it, t.extend, t.z, t.x, t.y) })
-                    ),
+                    transformGeometry(it.geometry, t.extend, t.z, t.x, t.y),
                     it.properties
             )
         }),
@@ -74,6 +86,11 @@ fun transformTile(t: Tile) : Tile =
                 t.y,
                 t.extend
         )
+
+fun transformGeometry(g: Geometry, extend: Int, z: Int, x: Int, y: Int) : Geometry = when(g) {
+    is Geometry.Point -> Geometry.Point(g.type, transformPoint(g.coordinates, extend, z, x, y))
+    else -> TODO()
+}
 
 fun transformPoint(p: List<Double>, extend: Int, z: Int, x: Int, y: Int) : List<Double> =
         listOf(Math.round(extend * (p[0] * z - x)).toDouble(), Math.round(extend * (p[1] * z - y)).toDouble())

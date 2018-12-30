@@ -1,6 +1,6 @@
-package io.marauder.tyler.parser
+package io.marauder.tyler.tiling
 
-import io.marauder.tyler.models.FeatureCollection
+import io.marauder.models.GeoJSON
 import io.marauder.tyler.store.StoreClient
 import kotlinx.coroutines.*
 import kotlin.math.pow
@@ -14,10 +14,10 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
     val BULK = 500000
     val MAX = Int.MAX_VALUE
 
-    suspend fun tiler(input: FeatureCollection) {
+    suspend fun tiler(input: GeoJSON) {
 
         input.features.take(MAX).chunked(BULK).forEach {
-            val bulk = FeatureCollection(features = it)
+            val bulk = GeoJSON(features = it)
 
             println("calculating bounding box: ${bulk.features.size} features")
             calcBbox(bulk)
@@ -46,7 +46,7 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
         }
     }
 
-    fun traverseZoom(f: FeatureCollection, z: Int) = GlobalScope.launch {
+    fun traverseZoom(f: GeoJSON, z: Int) = GlobalScope.launch {
         (0..(2.0.pow(z.toDouble()).toInt())).forEach { x ->
             val boundCheck = fcOutOfBounds(f, (1 shl z).toDouble(), (x).toDouble(), (1 + x).toDouble(), 0)
 
@@ -58,7 +58,7 @@ class Tiler (val client: StoreClient, val minZoom: Int = 0, val maxZoom: Int = 5
         }
     }
 
-    fun split(f: FeatureCollection, z: Int, x: Int, y: Int) {
+    fun split(f: GeoJSON, z: Int, x: Int, y: Int) {
         val z2 = 1 shl (if (z == 0) 0 else z )
 
         val k1 = 0.5 * BUFFER / EXTENT

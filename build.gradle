@@ -56,7 +56,9 @@ dependencies {
     compile "io.ktor:ktor-websockets:$ktor_version"
     compile "io.ktor:ktor-gson:$ktor_version"
     
-    compile "io.marauder:engine:0.0.1-SNAPSHOT"
+    compile group: 'io.marauder', name: 'engine', version: '0.0.1-SNAPSHOT', changing: true
+
+    compile 'com.google.protobuf:protobuf-java:3.0.0'
 
     compile group: 'org.mongodb', name: 'mongo-java-driver', version: '3.5.0'
     compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.20.1'

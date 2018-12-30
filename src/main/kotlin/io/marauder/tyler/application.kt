@@ -12,16 +12,19 @@ import java.time.*
 import io.ktor.gson.*
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
+import io.marauder.models.GeoJSON
 import io.marauder.store.StoreClientFS
-import io.marauder.store.StoreClientMongo
-import io.marauder.tyler.models.FeatureCollection
-import io.marauder.tyler.parser.Tiler
-import io.marauder.tyler.parser.projectFeatures
+import io.marauder.tyler.tiling.Tiler
+import io.marauder.tyler.tiling.projectFeatures
 import io.marauder.tyler.store.StoreClient
+import io.marauder.tyler.store.StoreClientMongo
 import io.marauder.tyler.store.StoreClientSQLite
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.json.JSON
+import kotlinx.serialization.parse
 import java.io.File
 import java.io.InputStreamReader
 import kotlin.system.measureTimeMillis
@@ -38,6 +41,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
     lateinit var store: StoreClient;
 
+    @ImplicitReflectionSerializer
     fun Application.module() {
         when (environment.config.propertyOrNull("ktor.application.store.type")?.getString() ?: "sqlite") {
             "sqlite" -> store = StoreClientSQLite(environment.config.propertyOrNull("ktor.application.store.sqlite.db")?.getString()
@@ -94,7 +98,8 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
         routing {
             post("/") {
-                val input = Gson().fromJson(InputStreamReader(call.receiveStream()), FeatureCollection::class.java)
+                val input = JSON.plain.parse<GeoJSON>(call.receiveText())
+
                 GlobalScope.launch(newSingleThreadContext("tiling-process-1")) {
                     //TODO: start tiling in independent thread
                     if (call.parameters["clear"] != null) {

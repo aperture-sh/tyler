@@ -1,14 +1,16 @@
 package io.marauder.store
 
+import io.marauder.models.GeoJSON
 import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.FeatureCollection
-import io.marauder.tyler.parser.createTileTransform
-import io.marauder.tyler.parser.mergeTiles
+import io.marauder.tyler.tiling.createTileTransform
+import io.marauder.tyler.tiling.mergeTiles
 import io.marauder.tyler.store.StoreClient
+import kotlinx.serialization.ImplicitReflectionSerializer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.zip.GZIPOutputStream
 
+@ImplicitReflectionSerializer
 class StoreClientFS(val folder: String) : StoreClient {
 
     init {
@@ -61,7 +63,7 @@ class StoreClientFS(val folder: String) : StoreClient {
         }
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)

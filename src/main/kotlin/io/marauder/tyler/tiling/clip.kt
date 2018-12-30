@@ -1,10 +1,10 @@
-package io.marauder.tyler.parser
+package io.marauder.tyler.tiling
 
-import io.marauder.tyler.models.Feature
-import io.marauder.tyler.models.FeatureCollection
-import io.marauder.tyler.models.Geometry
+import io.marauder.models.Feature
+import io.marauder.models.GeoJSON
+import io.marauder.models.Geometry
 
-fun fcOutOfBounds(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int) : Int {
+fun fcOutOfBounds(fc: GeoJSON, scale: Double, k1: Double, k2: Double, axis: Int) : Int {
     val scaleK1 = k1 / scale
     val scaleK2 = k2 / scale
     val minFC = fc.bbox[axis]
@@ -14,7 +14,7 @@ fun fcOutOfBounds(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, 
     return 0
 }
 
-fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int) : FeatureCollection {
+fun clip(fc: GeoJSON, scale: Double, k1: Double, k2: Double, axis: Int) : GeoJSON {
 //    println("scale: $scale, k1: $k1, k2: $k2, axis: $axis")
     val scaleK2 = k2 / scale
     val scaleK1 = k1 / scale
@@ -23,9 +23,9 @@ fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int
 
     if (minFC >= scaleK2 || maxFC <= scaleK1) {
 //        println("kil")
-        return FeatureCollection()
+        return GeoJSON(features = emptyList())
     }
-    return FeatureCollection(features =
+    return GeoJSON(features =
     fc.features.filter { f ->
         val min = f.bbox[axis]
         val max = f.bbox[2 + axis]
@@ -34,7 +34,11 @@ fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int
         //TODO: reject when complete collection or complete features bboxes are out of bounds
 //        true
     }.flatMap { f ->
-        if (f.geometry.coordinates.isEmpty()) {
+        when (f.geometry) {
+            is Geometry.Point -> listOf(f)
+            else -> listOf()
+        }
+        /*if (f.geometry.coordinates.isEmpty()) {
             listOf()
             //TODO: accept everyhing when bbox matches all
             //condition for trivia accept
@@ -54,12 +58,13 @@ fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, axis: Int
                 listOf()
             }
 
-        }
+        }*/
     }
     )
 }
 
-fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, k3: Double, k4: Double) : FeatureCollection {
+
+fun clip(fc: GeoJSON, scale: Double, k1: Double, k2: Double, k3: Double, k4: Double) : GeoJSON {
 //    println("scale: $scale, k1: $k1, k2: $k2, axis: $axis")
     val scaleK1 = k1 / scale
     val scaleK2 = k2 / scale
@@ -72,9 +77,9 @@ fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, k3: Doubl
 
     if (minFCx >= scaleK2 || maxFCx <= scaleK1 || minFCy >= scaleK4 || maxFCy <= scaleK3) {
 //        println("kil")
-        return FeatureCollection()
+        return GeoJSON(features = emptyList())
     }
-    return FeatureCollection(features =
+    return GeoJSON(features =
     fc.features.filter { f ->
         val minX = f.bbox[0]
         val maxX = f.bbox[2 + 0]
@@ -85,7 +90,12 @@ fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, k3: Doubl
         //TODO: reject when complete collection or complete features bboxes are out of bounds
 //        true
     }.flatMap { f ->
-        if (f.geometry.coordinates.isEmpty()) {
+        when (f.geometry) {
+            is Geometry.Point -> listOf(f)
+            else -> listOf()
+        }
+
+        /*if (f.geometry.coordinates.isEmpty()) {
             listOf()
             //TODO: accept everyhing when bbox matches all
             //condition for trivia accept
@@ -106,10 +116,11 @@ fun clip(fc: FeatureCollection, scale: Double, k1: Double, k2: Double, k3: Doubl
                 listOf()
             }
 
-        }
+        }*/
     }
     )
 }
+/*
 
 fun clipGeometry(g: Geometry, k1: Double, k2: Double, axis: Int): Geometry {
     val slice = mutableListOf<List<Double>>()
@@ -161,6 +172,7 @@ fun clipGeometry(g: Geometry, k1: Double, k2: Double, axis: Int): Geometry {
 
     return Geometry(g.type, mutableListOf(slice))
 }
+*/
 
 fun intersect(a: List<Double>, b: List<Double>, clip: Double, axis: Int): List<Double> =
     when (axis) {

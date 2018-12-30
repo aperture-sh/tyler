@@ -1,22 +1,23 @@
-package io.marauder.store
+package io.marauder.tyler.store
 
 import com.mongodb.MongoClient
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.gridfs.GridFSBucket
 import com.mongodb.client.gridfs.GridFSBuckets
 import com.mongodb.client.model.Filters
+import io.marauder.models.GeoJSON
 import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.toID
-import io.marauder.tyler.parser.createTileTransform
-import io.marauder.tyler.parser.mergeTiles
-import io.marauder.tyler.store.StoreClient
+import io.marauder.tyler.tiling.createTileTransform
+import io.marauder.tyler.tiling.mergeTiles
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ImplicitReflectionSerializer
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
+@ImplicitReflectionSerializer
 class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017) : StoreClient {
 
     private val database: MongoDatabase
@@ -78,7 +79,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         }
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)

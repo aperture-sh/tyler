@@ -1,10 +1,13 @@
 package io.marauder.tyler.store
 
 import com.google.gson.Gson
+import io.marauder.models.GeoJSON
 import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.FeatureCollection
-import io.marauder.tyler.parser.createTileTransform
-import io.marauder.tyler.parser.mergeTiles
+import io.marauder.tyler.tiling.createTileTransform
+import io.marauder.tyler.tiling.mergeTiles
+import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.json.JSON
+import kotlinx.serialization.parse
 import no.ecc.vectortile.VectorTileDecoder
 import no.ecc.vectortile.VectorTileEncoder
 import java.io.ByteArrayOutputStream
@@ -13,6 +16,7 @@ import java.sql.DriverManager
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
+@ImplicitReflectionSerializer
 class StoreClientSQLite(db: String) : StoreClient {
 
     private var conn: Connection
@@ -72,7 +76,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), Gson().fromJson(tile, FeatureCollection::class.java), z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile), z, x, y))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
@@ -104,7 +108,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         }
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)

@@ -1,58 +1,33 @@
-package io.marauder.tyler.parser
+package io.marauder.tyler.tiling
 
 import io.marauder.Engine
+import io.marauder.models.GeoJSON
+import io.marauder.models.Geometry
 import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.FeatureCollection
 import io.marauder.tyler.models.Tile
+import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.dump
+import kotlinx.serialization.protobuf.ProtoBuf
 import no.ecc.vectortile.VectorTileDecoder
 import no.ecc.vectortile.VectorTileEncoder
 
 
-
 val gf = org.locationtech.jts.geom.GeometryFactory()
+val encoder = Engine()
+
 const val LAYER_NAME = "io.marauder.main"
 
-fun createTile(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): ByteArray {
-    val encoder = VectorTileEncoder(4096, 8, false)
-
-    featureCollection.features.map {
-        val geom = when (it.geometry.type) {
-            "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "Point" -> gf.createPoint(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
-            "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-        }
-        encoder.addFeature(LAYER_NAME, it.properties, geom)
-    }
-
-    return encoder.encode()
-
+@ImplicitReflectionSerializer
+fun createTile(geoJSON: GeoJSON, z: Int, x: Int, y: Int): ByteArray {
+    return ProtoBuf.dump(encoder.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, LAYER_NAME))
 }
 
-fun createTileTransform(featureCollection: FeatureCollection, z: Int, x: Int, y: Int): ByteArray {
-    val encoder = VectorTileEncoder(4096, 8, false)
-
-    val enc = Engine()
-    
-    transformTile(
-            Tile(featureCollection, 1 shl z, x, y, 4096)
-    ).featureCollection.features.map {
-        val geom = when (it.geometry.type) {
-            "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "Point" -> gf.createPoint(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
-            "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-        }
-        encoder.addFeature(LAYER_NAME, it.properties, geom)
-    }
-
-    return encoder.encode()
-
+@ImplicitReflectionSerializer
+fun createTileTransform(geoJSON: GeoJSON, z: Int, x: Int, y: Int): ByteArray {
+    return ProtoBuf.dump(encoder.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, LAYER_NAME))
 }
 
-fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : ByteArray {
+fun mergeTiles(t1: ByteArray, t2: GeoJSON, z: Int, x: Int, y: Int) : ByteArray {
     val decoder = VectorTileDecoder()
     val encoder = VectorTileEncoder(4096, 8, false)
 
@@ -65,13 +40,13 @@ fun mergeTiles(t1: ByteArray, t2: FeatureCollection, z: Int, x: Int, y: Int) : B
 
     transformTile(
             Tile(t2, 1 shl z, x, y, 4096)
-    ).featureCollection.features.forEach {
-        val geom = when (it.geometry.type) {
-            "Polygon" ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            "Point" -> gf.createPoint(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }[0])
-            "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
-            else ->  gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+    ).geojson.features.forEach {
+        val geom = when (it.geometry) {
+            is Geometry.Polygon ->  gf.createPolygon((it.geometry as Geometry.Polygon).coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+//            "MultiPolygon" -> gf.createPolygon(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            is Geometry.Point -> gf.createPoint((it.geometry as Geometry.Point).coordinates.let { org.locationtech.jts.geom.Coordinate(it[0], it[1]) })
+//            "LineString" -> gf.createLineString(it.geometry.coordinates[0].map { org.locationtech.jts.geom.Coordinate(it[0], it[1]) }.toTypedArray())
+            else ->  gf.createPoint((it.geometry as Geometry.Point).coordinates.let { org.locationtech.jts.geom.Coordinate(it[0], it[1]) })
         }
         encoder.addFeature(LAYER_NAME, it.properties, geom)
     }
