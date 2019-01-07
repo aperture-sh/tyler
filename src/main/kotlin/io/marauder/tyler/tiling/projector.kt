@@ -14,6 +14,18 @@ fun projectFeatures(featureCollection: GeoJSON): GeoJSON =
 fun projectFeature(f: Feature): Feature {
     val geometry = when(f.geometry) {
         is Geometry.Point -> Geometry.Point(GeometryType.Point, (f.geometry as Geometry.Point).let { projectPoint(it.coordinates) })
+        is Geometry.Polygon -> Geometry.Polygon(GeometryType.Polygon, (f.geometry as Geometry.Polygon).let {
+            it.coordinates.map { ring ->
+                ring.map { p -> projectPoint(p) }
+            }
+        })
+        is Geometry.MultiPolygon -> Geometry.MultiPolygon(coordinates = (f.geometry as Geometry.MultiPolygon).let {
+            it.coordinates.map { polygon ->
+                polygon.map { ring ->
+                    ring.map { p -> projectPoint(p) }
+                }
+            }
+        })
         else -> TODO()
     }
     return Feature (
@@ -39,6 +51,18 @@ fun projectPoint(p: List<Double>): List<Double> {
 fun calcBbox(f: Feature) {
     when(f.geometry) {
         is Geometry.Point -> calcBbox(listOf((f.geometry as Geometry.Point).coordinates), f.bbox)
+        is Geometry.Polygon -> {
+            calcBbox((f.geometry as Geometry.Polygon).coordinates.fold(listOf()) { list, ring ->
+                list + ring
+            }, f.bbox)
+        }
+        is Geometry.MultiPolygon -> {
+            calcBbox((f.geometry as Geometry.MultiPolygon).coordinates.fold(listOf()) { list, polygon ->
+                list + polygon.fold(listOf<List<Double>>()) { polyList, ring ->
+                    polyList + ring
+                }
+            }, f.bbox)
+        }
         else -> TODO()
     }
 }
@@ -60,6 +84,25 @@ fun calcBbox(f: GeoJSON) {
         f.bbox[2] = Math.max(it.bbox[2], f.bbox[2])
         f.bbox[1] = Math.min(it.bbox[1], f.bbox[1])
         f.bbox[3] = Math.max(it.bbox[3], f.bbox[3])
+    }
+}
+
+fun foldCoordinates(f: Feature) : List<List<Double>> {
+    return when(f.geometry) {
+        is Geometry.Point -> listOf((f.geometry as Geometry.Point).coordinates)
+        is Geometry.Polygon -> {
+            (f.geometry as Geometry.Polygon).coordinates.fold(listOf()) { list, ring ->
+                list + ring
+            }
+        }
+        is Geometry.MultiPolygon -> {
+            (f.geometry as Geometry.MultiPolygon).coordinates.fold(listOf()) { list, polygon ->
+                list + polygon.fold(listOf<List<Double>>()) { polyList, ring ->
+                    polyList + ring
+                }
+            }
+        }
+        else -> TODO()
     }
 }
 
@@ -89,6 +132,18 @@ fun transformTile(t: Tile) : Tile =
 
 fun transformGeometry(g: Geometry, extend: Int, z: Int, x: Int, y: Int) : Geometry = when(g) {
     is Geometry.Point -> Geometry.Point(g.type, transformPoint(g.coordinates, extend, z, x, y))
+    is Geometry.Polygon -> Geometry.Polygon(GeometryType.Polygon, g.coordinates.let {
+        it.map { ring ->
+            ring.map { p -> transformPoint(p, extend, z, x, y) }
+        }
+    })
+    is Geometry.MultiPolygon -> Geometry.MultiPolygon(coordinates = g.coordinates.let {
+        it.map { polygon ->
+            polygon.map { ring ->
+                ring.map { p -> transformPoint(p, extend, z, x, y) }
+            }
+        }
+    })
     else -> TODO()
 }
 

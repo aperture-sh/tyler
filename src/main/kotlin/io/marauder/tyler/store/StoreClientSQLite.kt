@@ -1,15 +1,16 @@
 package io.marauder.tyler.store
 
 import com.google.gson.Gson
+import io.marauder.Engine
+import io.marauder.models.Feature
 import io.marauder.models.GeoJSON
 import io.marauder.tyler.models.BoundingBox
+import io.marauder.tyler.tiling.LAYER_NAME
 import io.marauder.tyler.tiling.createTileTransform
 import io.marauder.tyler.tiling.mergeTiles
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.json.JSON
 import kotlinx.serialization.parse
-import no.ecc.vectortile.VectorTileDecoder
-import no.ecc.vectortile.VectorTileEncoder
 import java.io.ByteArrayOutputStream
 import java.sql.Connection
 import java.sql.DriverManager
@@ -20,6 +21,7 @@ import java.util.zip.GZIPOutputStream
 class StoreClientSQLite(db: String) : StoreClient {
 
     private var conn: Connection
+    private val engine = Engine()
 
     init {
         val url = "jdbc:sqlite:$db"
@@ -162,23 +164,19 @@ class StoreClientSQLite(db: String) : StoreClient {
         val stmt = conn.createStatement()
         val rs = stmt.executeQuery(sql)
         if (rs != null && rs.next()) {
-            if (properties.isEmpty()) {
-                return getTile(x, y, z)
+            return if (properties.isEmpty()) {
+                getTile(x, y, z)
             } else {
-                val decoder = VectorTileDecoder()
-                decoder.isAutoScale = false
-                val encoder = VectorTileEncoder(4096, 7, false)
-
-                decoder.decode(getTile(x, y, z)!!).asList().forEach {
-                    encoder.addFeature("de.fraunhofer.igd.main", it.attributes.filter { attr -> properties.contains(attr.key) },  it.geometry)
+                val features = engine.decode(engine.deserialize(getTile(x, y, z)!!)).map {
+                    Feature(geometry = it.geometry, properties =  it.properties.filter { attr -> properties.contains(attr.key) })
                 }
 
                 val os = ByteArrayOutputStream()
                 val gzip = GZIPOutputStream(os)
-                gzip.write(encoder.encode())
+                gzip.write(engine.encode(features, LAYER_NAME).toByteArray())
                 gzip.close()
 
-                return os.toByteArray()
+                os.toByteArray()
             }
         } else {
             return null
