@@ -1,4 +1,4 @@
-package io.marauder.store
+package io.marauder.tyler.store
 
 import io.marauder.models.GeoJSON
 import io.marauder.tyler.models.BoundingBox
@@ -55,7 +55,7 @@ class StoreClientFS(val folder: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {
@@ -67,7 +67,7 @@ class StoreClientFS(val folder: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {

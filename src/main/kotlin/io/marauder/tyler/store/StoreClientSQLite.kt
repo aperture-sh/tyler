@@ -1,6 +1,5 @@
 package io.marauder.tyler.store
 
-import com.google.gson.Gson
 import io.marauder.Engine
 import io.marauder.models.Feature
 import io.marauder.models.GeoJSON
@@ -78,7 +77,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile), z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile)))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
@@ -96,7 +95,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
@@ -114,7 +113,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'

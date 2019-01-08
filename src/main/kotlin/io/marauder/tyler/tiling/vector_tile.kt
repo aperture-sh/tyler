@@ -22,13 +22,13 @@ fun createTileTransform(geoJSON: GeoJSON, z: Int, x: Int, y: Int): ByteArray {
     return encoder.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, LAYER_NAME).toByteArray()
 }
 
-fun mergeTiles(t1: ByteArray, t2: GeoJSON, z: Int, x: Int, y: Int) : ByteArray {
+fun mergeTiles(t1: ByteArray, t2: GeoJSON) : ByteArray {
     val tile1 = encoder.deserialize(t1)
     val tile2 = encoder.encode(t2.features, LAYER_NAME)
     return encoder.merge(tile1, tile2).toByteArray()
 }
 
-fun mergeTiles(t1: ByteArray, t2: ByteArray, z: Int, x: Int, y: Int) : ByteArray {
+fun mergeTiles(t1: ByteArray, t2: ByteArray) : ByteArray {
     return encoder.merge(t1, t2).toByteArray()
 }
 

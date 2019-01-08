@@ -67,7 +67,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             GlobalScope.launch {
                 val up = getGrid().openUploadStream(toID(z, x, y).toString())
@@ -83,7 +83,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile, z, x, y))
+            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
 //            GlobalScope.launch {
                 val up = getGrid().openUploadStream(toID(z, x, y).toString())

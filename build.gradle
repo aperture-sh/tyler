@@ -23,7 +23,7 @@ mainClassName = "io.ktor.server.netty.DevelopmentEngine"
 
 sourceSets {
     main.kotlin.srcDirs = main.java.srcDirs = ['src/main/kotlin']
-    test.kotlin.srcDirs = test.java.srcDirs = ['test']
+    test.kotlin.srcDirs = test.java.srcDirs = ['src/test/kotlin']
     main.resources.srcDirs = ['resources']
     test.resources.srcDirs = ['testresources']
 }

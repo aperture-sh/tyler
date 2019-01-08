@@ -13,7 +13,7 @@ import io.ktor.gson.*
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.marauder.models.GeoJSON
-import io.marauder.store.StoreClientFS
+import io.marauder.tyler.store.StoreClientFS
 import io.marauder.tyler.tiling.Tiler
 import io.marauder.tyler.tiling.projectFeatures
 import io.marauder.tyler.store.StoreClient
