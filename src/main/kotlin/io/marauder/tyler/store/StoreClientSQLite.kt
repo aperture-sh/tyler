@@ -6,7 +6,7 @@ import io.marauder.models.GeoJSON
 import io.marauder.tyler.BoundingBox
 import io.marauder.tyler.tiling.LAYER_NAME
 import io.marauder.tyler.tiling.createTileTransform
-import io.marauder.tyler.tiling.mergeTiles
+import io.marauder.tyler.tiling.mergeTilesInject
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.json.JSON
 import kotlinx.serialization.parse
@@ -77,7 +77,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile)))
+            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile)))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
@@ -95,7 +95,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
@@ -113,7 +113,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'

@@ -9,7 +9,7 @@ import io.marauder.models.GeoJSON
 import io.marauder.tyler.BoundingBox
 import io.marauder.tyler.toID
 import io.marauder.tyler.tiling.createTileTransform
-import io.marauder.tyler.tiling.mergeTiles
+import io.marauder.tyler.tiling.mergeTilesInject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ImplicitReflectionSerializer
@@ -67,7 +67,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             GlobalScope.launch {
                 val up = getGrid().openUploadStream(toID(z, x, y).toString())
@@ -83,7 +83,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
 //            GlobalScope.launch {
                 val up = getGrid().openUploadStream(toID(z, x, y).toString())

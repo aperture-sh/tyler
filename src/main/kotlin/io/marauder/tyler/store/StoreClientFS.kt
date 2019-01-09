@@ -3,8 +3,7 @@ package io.marauder.tyler.store
 import io.marauder.models.GeoJSON
 import io.marauder.tyler.BoundingBox
 import io.marauder.tyler.tiling.createTileTransform
-import io.marauder.tyler.tiling.mergeTiles
-import io.marauder.tyler.store.StoreClient
+import io.marauder.tyler.tiling.mergeTilesInject
 import kotlinx.serialization.ImplicitReflectionSerializer
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -55,7 +54,7 @@ class StoreClientFS(val folder: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {
@@ -67,7 +66,7 @@ class StoreClientFS(val folder: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTiles(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {

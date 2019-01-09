@@ -3,6 +3,7 @@ package io.marauder.tyler.tiling
 import io.marauder.Engine
 import io.marauder.models.Feature
 import io.marauder.models.GeoJSON
+import io.marauder.models.Value
 import io.marauder.tyler.BoundingBox
 import io.marauder.tyler.Tile
 import kotlinx.serialization.ImplicitReflectionSerializer
@@ -28,7 +29,22 @@ fun mergeTiles(t1: ByteArray, t2: GeoJSON) : ByteArray {
     return encoder.merge(tile1, tile2).toByteArray()
 }
 
-fun mergeTiles(t1: ByteArray, t2: ByteArray) : ByteArray {
+fun mergeTilesInject(t1: ByteArray, t2: GeoJSON) : ByteArray{
+    val t1 = encoder.deserialize(t1)
+    val layer1 = t1.getLayers(0)
+
+    val keyList = layer1.keysList.mapIndexed { i, s -> s to i }.toMap().toMutableMap()
+    val l = layer1.valuesList.mapIndexed { i, v ->
+        when {
+            v.hasDoubleValue() -> Value.DoubleValue(v.doubleValue) to i
+            v.hasIntValue() ->  Value.IntValue(v.intValue) to i
+            else -> Value.StringValue(v.stringValue) to i
+        }
+    }.toMap().toMutableMap()
+    return encoder.encode(t2.features, LAYER_NAME, keyList, l, layer1.featuresList).toByteArray()
+}
+
+fun mergeTilesInject(t1: ByteArray, t2: ByteArray) : ByteArray {
     return encoder.merge(t1, t2).toByteArray()
 }
 
