@@ -1,7 +1,7 @@
 package io.marauder.tyler.store
 
 import io.marauder.models.GeoJSON
-import io.marauder.tyler.models.BoundingBox
+import io.marauder.tyler.BoundingBox
 
 interface StoreClient {
     fun setTile(x: Int, y: Int, z: Int, tile: String)

@@ -4,8 +4,8 @@ import io.marauder.models.Feature
 import io.marauder.models.GeoJSON
 import io.marauder.models.Geometry
 import io.marauder.models.GeometryType
-import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.Tile
+import io.marauder.tyler.BoundingBox
+import io.marauder.tyler.Tile
 
 fun projectFeatures(featureCollection: GeoJSON): GeoJSON =
         GeoJSON(featureCollection.type, featureCollection.features.map { f -> projectFeature(f) })

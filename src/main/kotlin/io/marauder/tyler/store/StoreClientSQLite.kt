@@ -3,7 +3,7 @@ package io.marauder.tyler.store
 import io.marauder.Engine
 import io.marauder.models.Feature
 import io.marauder.models.GeoJSON
-import io.marauder.tyler.models.BoundingBox
+import io.marauder.tyler.BoundingBox
 import io.marauder.tyler.tiling.LAYER_NAME
 import io.marauder.tyler.tiling.createTileTransform
 import io.marauder.tyler.tiling.mergeTiles

@@ -1,4 +1,4 @@
-package io.marauder.tyler.models
+package io.marauder.tyler
 
 import io.marauder.models.GeoJSON
 

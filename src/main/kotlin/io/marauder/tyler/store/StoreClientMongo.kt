@@ -6,8 +6,8 @@ import com.mongodb.client.gridfs.GridFSBucket
 import com.mongodb.client.gridfs.GridFSBuckets
 import com.mongodb.client.model.Filters
 import io.marauder.models.GeoJSON
-import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.toID
+import io.marauder.tyler.BoundingBox
+import io.marauder.tyler.toID
 import io.marauder.tyler.tiling.createTileTransform
 import io.marauder.tyler.tiling.mergeTiles
 import kotlinx.coroutines.GlobalScope

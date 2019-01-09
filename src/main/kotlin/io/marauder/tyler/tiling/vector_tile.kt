@@ -3,8 +3,8 @@ package io.marauder.tyler.tiling
 import io.marauder.Engine
 import io.marauder.models.Feature
 import io.marauder.models.GeoJSON
-import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.Tile
+import io.marauder.tyler.BoundingBox
+import io.marauder.tyler.Tile
 import kotlinx.serialization.ImplicitReflectionSerializer
 
 
