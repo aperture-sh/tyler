@@ -53,7 +53,7 @@ dependencies {
     compile "io.ktor:ktor-websockets:$ktor_version"
     compile "io.ktor:ktor-gson:$ktor_version"
     
-    compile group: 'io.marauder', name: 'engine', version: '0.0.1-SNAPSHOT', changing: true
+    compile group: 'io.marauder', name: 'engine', version: '0.0.1', changing: true
 
     compile 'com.google.protobuf:protobuf-java:3.0.0'
 
