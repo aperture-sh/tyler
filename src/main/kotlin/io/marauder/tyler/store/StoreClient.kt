@@ -1,8 +1,7 @@
 package io.marauder.tyler.store
 
-import io.marauder.tyler.models.BoundingBox
-import io.marauder.tyler.models.FeatureCollection
-import java.io.Writer
+import io.marauder.models.GeoJSON
+import io.marauder.tyler.BoundingBox
 
 interface StoreClient {
     fun setTile(x: Int, y: Int, z: Int, tile: String)
@@ -14,5 +13,5 @@ interface StoreClient {
     fun clearStore()
     fun updateTile(x: Int, y: Int, z: Int, tile: String)
     fun updateTile(x: Int, y: Int, z: Int, tile: ByteArray)
-    fun updateTile(x: Int, y: Int, z: Int, tile: FeatureCollection)
+    fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON)
 }

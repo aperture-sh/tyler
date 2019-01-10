@@ -1,67 +1,65 @@
 package io.marauder.tyler
 
-import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.request.*
 import io.ktor.routing.*
 import io.ktor.http.*
-import io.ktor.content.*
-import io.ktor.locations.*
 import io.ktor.features.*
 import org.slf4j.event.*
 import java.time.*
-import io.ktor.gson.*
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.marauder.store.StoreClientFS
-import io.marauder.store.StoreClientMongo
-import io.marauder.tyler.models.FeatureCollection
-import io.marauder.tyler.parser.Tiler
-import io.marauder.tyler.parser.Tiler2
-import io.marauder.tyler.parser.projectFeatures
-import io.marauder.tyler.store.StoreClient
+import io.marauder.models.GeoJSON
+import io.marauder.tyler.store.StoreClientFS
+import io.marauder.tyler.tiling.Tiler
+import io.marauder.tyler.tiling.projectFeatures
+import io.marauder.tyler.store.StoreClientMongo
 import io.marauder.tyler.store.StoreClientSQLite
+import io.marauder.tyler.tiling.VT
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.json.JSON
+import kotlinx.serialization.json.JsonParsingException
+import kotlinx.serialization.parse
 import java.io.File
-import java.io.InputStreamReader
 import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
-/*fun main(args: Array<String>) {
-    //io.ktor.server.netty.main(args) // Manually using Netty's DevelopmentEngine
-    embeddedServer(
-            Netty, watchPaths = listOf("tyler"), port = 8080,
-            module = Application::module
-    ).start(wait = true)
-    }*/
-
-    lateinit var store: StoreClient;
-
+    @ImplicitReflectionSerializer
     fun Application.module() {
-        when (environment.config.propertyOrNull("ktor.application.store.type")?.getString() ?: "sqlite") {
-            "sqlite" -> store = StoreClientSQLite(environment.config.propertyOrNull("ktor.application.store.sqlite.db")?.getString()
-                    ?: "./storage")
-            "mongo" -> store = StoreClientMongo(
+
+        val minZoom = environment.config.propertyOrNull("ktor.application.min_zoom")?.getString()?.toInt() ?: 2
+        val maxZoom = environment.config.propertyOrNull("ktor.application.max_zoom")?.getString()?.toInt() ?: 15
+        val baseLayer = environment.config.propertyOrNull("ktor.application.base_layer")?.getString() ?: "io.marauder.tyler"
+        val extend = environment.config.propertyOrNull("ktor.application.extend")?.getString()?.toInt() ?: 4096
+        val buffer = environment.config.propertyOrNull("ktor.application.buffer")?.getString()?.toInt() ?: 64
+        val chunkInsert = environment.config.propertyOrNull("ktor.application.chunk_insert")?.getString()?.toInt() ?: 500_000
+        val maxInsert = environment.config.propertyOrNull("ktor.application.max_insert")?.getString()?.toInt() ?: Int.MAX_VALUE
+        val threads = environment.config.propertyOrNull("ktor.application.threads")?.getString()?.toInt() ?: 2
+
+        val vt = VT(extend, buffer, baseLayer)
+
+        val store = when (environment.config.propertyOrNull("ktor.application.store.type")?.getString() ?: "sqlite") {
+            "mongo" -> StoreClientMongo(
                     environment.config.propertyOrNull("ktor.application.store.mongo.db")?.getString() ?: "marauder",
                     environment.config.propertyOrNull("ktor.application.store.mongo.host")?.getString() ?: "localhost",
                     environment.config.propertyOrNull("ktor.application.store.mongo.port")?.getString()?.toInt()
-                            ?: 27017
+                            ?: 27017,
+                    vt
             )
             "fs" -> {
                 val dir = environment.config.propertyOrNull("ktor.application.store.fs.folder")?.getString() ?: "./tree"
                 File(dir).mkdirs()
-                store = StoreClientFS(dir)
+                StoreClientFS(dir, vt)
             }
+            // else take sqlite
+            else -> StoreClientSQLite(environment.config.propertyOrNull("ktor.application.store.sqlite.db")?.getString()
+                    ?: "./storage", vt)
         }
-
-//    install(Locations) {
-//    }
 
         install(Compression) {
             gzip {
@@ -78,8 +76,6 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
             filter { call -> call.request.path().startsWith("/") }
         }
 
-        install(DataConversion)
-
         install(DefaultHeaders) {
             header("X-Engine", "Ktor") // will send this header with each response
         }
@@ -91,15 +87,10 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
             masking = false
         }
 
-        install(ContentNegotiation) {
-            gson {
-            }
-        }
-
-
         routing {
             post("/") {
-                val input = Gson().fromJson(InputStreamReader(call.receiveStream()), FeatureCollection::class.java)
+                val input = JSON.plain.parse<GeoJSON>(call.receiveText())
+
                 GlobalScope.launch(newSingleThreadContext("tiling-process-1")) {
                     //TODO: start tiling in independent thread
                     if (call.parameters["clear"] != null) {
@@ -107,15 +98,14 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
                         store.clearStore()
                     }
 
-
                     val time = measureTimeMillis {
-                            val tyler = Tiler2(store, 0, 15)
+                            val tyler = Tiler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
                             tyler.tiler(projectFeatures(input))
                     }
                     println("time: $time")
                 }
 
-                call.respondText("tiling started", contentType = ContentType.Text.Plain)
+                call.respondText("tiling started", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
             }
 
             get("/{z}/{x}/{y_type}") {
@@ -132,37 +122,22 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
                     store.clearStore()
                 }
 
-                call.respondText("clearing store started", contentType = ContentType.Text.Plain)
+                call.respondText("clearing store started", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
             }
-
 
             static("/static") {
                 resources("static")
             }
 
             install(StatusPages) {
-                exception<AuthenticationException> { _ ->
-                    call.respond(HttpStatusCode.Unauthorized)
+                exception<OutOfMemoryError> {
+                    call.respond(status = HttpStatusCode.InternalServerError, message = "Out of memory: reduce file size")
                 }
-                exception<AuthorizationException> { _ ->
-                    call.respond(HttpStatusCode.Forbidden)
+
+                exception<JsonParsingException> {
+                    call.respond(status = HttpStatusCode.InternalServerError, message = "Json Parsing Issue: Check file format")
                 }
 
             }
-
-            /*webSocket("/myws/echo") {
-            send(Frame.Text("Hi from server"))
-            while (true) {
-                val frame = incoming.receive()
-                if (frame is Frame.Text) {
-                    send(Frame.Text("Client said: " + frame.readText()))
-                }
-            }
-        }*/
-
-
         }
     }
-
-    class AuthenticationException : RuntimeException()
-    class AuthorizationException : RuntimeException()

@@ -31,7 +31,7 @@ build_image_master:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
   script:
   - docker pull $UPSTREAM_IMAGE:latest || true
-  - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:latest .
+  - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:latest --build-arg artifactory_user --build-arg artifactory_password --build-arg artifactory_contextUrl .
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
   - docker push $CI_REGISTRY_IMAGE:latest
   only:
@@ -51,7 +51,7 @@ build_image_branches:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
   script:
   - docker pull $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME || true
-  - docker build --cache-from $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
+  - docker build --cache-from $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME --build-arg artifactory_user --build-arg artifactory_password --build-arg artifactory_contextUrl .
   - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
   except:
