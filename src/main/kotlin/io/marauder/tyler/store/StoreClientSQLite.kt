@@ -1,12 +1,9 @@
 package io.marauder.tyler.store
 
-import io.marauder.Engine
 import io.marauder.models.Feature
 import io.marauder.models.GeoJSON
 import io.marauder.tyler.BoundingBox
-import io.marauder.tyler.tiling.LAYER_NAME
-import io.marauder.tyler.tiling.createTileTransform
-import io.marauder.tyler.tiling.mergeTilesInject
+import io.marauder.tyler.tiling.VT
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.json.JSON
 import kotlinx.serialization.parse
@@ -17,10 +14,9 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 @ImplicitReflectionSerializer
-class StoreClientSQLite(db: String) : StoreClient {
+class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
 
     private var conn: Connection
-    private val engine = Engine()
 
     init {
         val url = "jdbc:sqlite:$db"
@@ -77,7 +73,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile)))
+            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile)))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
@@ -95,7 +91,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
@@ -113,7 +109,7 @@ class StoreClientSQLite(db: String) : StoreClient {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
@@ -123,7 +119,7 @@ class StoreClientSQLite(db: String) : StoreClient {
             stmt.execute()
             stmt.close()
         } else {
-            setTile(x, y, z, createTileTransform(tile, z, x, y))
+            setTile(x, y, z, vt.createTileTransform(tile, z, x, y))
         }
     }
 
@@ -166,13 +162,13 @@ class StoreClientSQLite(db: String) : StoreClient {
             return if (properties.isEmpty()) {
                 getTile(x, y, z)
             } else {
-                val features = engine.decode(engine.deserialize(getTile(x, y, z)!!)).map {
+                val features = vt.engine.decode(vt.engine.deserialize(getTile(x, y, z)!!)).map {
                     Feature(geometry = it.geometry, properties =  it.properties.filter { attr -> properties.contains(attr.key) })
                 }
 
                 val os = ByteArrayOutputStream()
                 val gzip = GZIPOutputStream(os)
-                gzip.write(engine.encode(features, LAYER_NAME).toByteArray())
+                gzip.write(vt.engine.encode(features, vt.layerName).toByteArray())
                 gzip.close()
 
                 os.toByteArray()

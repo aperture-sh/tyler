@@ -7,9 +7,8 @@ import com.mongodb.client.gridfs.GridFSBuckets
 import com.mongodb.client.model.Filters
 import io.marauder.models.GeoJSON
 import io.marauder.tyler.BoundingBox
+import io.marauder.tyler.tiling.VT
 import io.marauder.tyler.toID
-import io.marauder.tyler.tiling.createTileTransform
-import io.marauder.tyler.tiling.mergeTilesInject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ImplicitReflectionSerializer
@@ -18,7 +17,7 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 @ImplicitReflectionSerializer
-class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017) : StoreClient {
+class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017, private val vt: VT) : StoreClient {
 
     private val database: MongoDatabase
 
@@ -67,7 +66,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             GlobalScope.launch {
                 val up = getGrid().openUploadStream(toID(z, x, y).toString())
@@ -83,7 +82,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
 //            GlobalScope.launch {
                 val up = getGrid().openUploadStream(toID(z, x, y).toString())
@@ -91,7 +90,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
                 up.close()
 //            }
         } else {
-            setTile(x, y, z, createTileTransform(tile, z, x, y))
+            setTile(x, y, z, vt.createTileTransform(tile, z, x, y))
         }
     }
 

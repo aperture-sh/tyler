@@ -110,7 +110,7 @@ fun intersects(b1: BoundingBox, b2: BoundingBox): Boolean =
         (b1.first.first < b2.second.first && b1.second.first > b2.first.first && b1.second.second > b2.first.second && b1.first.second < b2.second.second)
 
 fun includesPoints(b: BoundingBox, coords: List<List<Double>>): Boolean =
-        coords.map { includesPoint(b, it) }.fold(true) { a, b -> a && b }
+        coords.map { includesPoint(b, it) }.fold(true) { b1, b2 -> b1 && b2 }
 
 fun includesPoint(b: BoundingBox, coord: List<Double>): Boolean =
         coord[0] < b.second.first && coord[0] > b.first.first && coord[1] < b.second.second && coord[1] > b.first.second
