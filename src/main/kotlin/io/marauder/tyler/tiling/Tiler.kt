@@ -33,13 +33,10 @@ class Tiler(
 
 //        val merged = FeatureCollection(features = left.features + right.features + center.features)
 
-//        split(input, 0, 0, 0).join()
-
             (minZoom..maxZoom).chunked(threads).forEach { zoomLvL ->
                 println("\rzoom level in parallel: $zoomLvL")
                 val jobs = mutableListOf<Job>()
                 zoomLvL.forEach { z ->
-                    //                traverseZoom(input, z)
                     jobs.add(traverseZoom(bulk, z))
                 }
                 jobs.forEach { job -> job.join() }
@@ -66,16 +63,11 @@ class Tiler(
         val k1 = 0.5 * buffer / extend
         val k3 = 1 + k1
 
-//        val vertical = clip(f, z2.toDouble(), y + k1, y + k3, 1)
         val clipped = clip(f, z2.toDouble(), x - k1, x + k3, y - k1, y + k3)
 
         if (clipped.features.isNotEmpty()) {
             calcBbox(clipped)
-//            val horizontal = clip(f, z2.toDouble(), x - k1, x + k3, 0)
-
-//            if (horizontal.features.isNotEmpty()) {
             print("\rencode: $z/$x/$y")
-//            println(vertical.features)
 
             runBlocking {
                 client.updateTile(x, y, z, clipped)

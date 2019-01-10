@@ -46,18 +46,16 @@ fun clip(fc: GeoJSON, scale: Double, k1: Double, k2: Double, k3: Double, k4: Dou
             is Geometry.Polygon -> {
                 val vertClipped = clipPolygon(f.geometry as Geometry.Polygon, scaleK1, scaleK2, scaleK3, scaleK4, 0)
                 listOf(Feature(geometry = clipPolygon(vertClipped, scaleK3, scaleK4, scaleK3, scaleK4, 1),
-                        properties = f.properties,
-                        type = f.type)
+                        properties = f.properties)
                 )
             }
             is Geometry.MultiPolygon -> {
                 val vertClipped = (f.geometry as Geometry.MultiPolygon).coordinates.map { clipPolygon(Geometry.Polygon(coordinates = it), scaleK1, scaleK2, scaleK3, scaleK4, 0) }
                 listOf(Feature(geometry = Geometry.MultiPolygon(coordinates = vertClipped.map { clipPolygon(Geometry.Polygon(coordinates = it.coordinates), scaleK3, scaleK4, scaleK3, scaleK4, 1).coordinates }),
-                        properties = f.properties,
-                        type = f.type)
+                        properties = f.properties)
                 )
             }
-            else -> listOf()
+            else -> listOf(f)
         }
 
        /* if (f.geometry.coordinates.isEmpty()) {
