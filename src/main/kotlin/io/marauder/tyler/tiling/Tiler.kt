@@ -67,7 +67,7 @@ class Tiler(
         val k3 = 1 + k1
 
 //        val vertical = clip(f, z2.toDouble(), y + k1, y + k3, 1)
-        val clipped = clip(f, z2.toDouble(), x - k1, x + k3, y + k1, y + k3)
+        val clipped = clip(f, z2.toDouble(), x - k1, x + k3, y - k1, y + k3)
 
         if (clipped.features.isNotEmpty()) {
             calcBbox(clipped)
