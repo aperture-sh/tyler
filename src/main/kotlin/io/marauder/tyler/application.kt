@@ -122,7 +122,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
                     store.clearStore()
                 }
 
-                call.respondText("clearing store started", contentType = ContentType.Text.Plain)
+                call.respondText("clearing store started", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
             }
 
             static("/static") {
