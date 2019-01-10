@@ -34,7 +34,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
         val minZoom = environment.config.propertyOrNull("ktor.application.min_zoom")?.getString()?.toInt() ?: 2
         val maxZoom = environment.config.propertyOrNull("ktor.application.max_zoom")?.getString()?.toInt() ?: 15
-        val baseLayer = environment.config.propertyOrNull("ktor.application.base_layer")?.getString() ?: "io.marauder.main"
+        val baseLayer = environment.config.propertyOrNull("ktor.application.base_layer")?.getString() ?: "io.marauder.tyler"
         val extend = environment.config.propertyOrNull("ktor.application.extend")?.getString()?.toInt() ?: 4096
         val buffer = environment.config.propertyOrNull("ktor.application.buffer")?.getString()?.toInt() ?: 64
         val chunkInsert = environment.config.propertyOrNull("ktor.application.chunk_insert")?.getString()?.toInt() ?: 500_000
