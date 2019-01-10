@@ -14,7 +14,18 @@ fun projectFeatures(featureCollection: GeoJSON): GeoJSON =
 fun projectFeature(f: Feature): Feature {
     val geometry = when(f.geometry) {
         is Geometry.Point -> Geometry.Point(GeometryType.Point, (f.geometry as Geometry.Point).let { projectPoint(it.coordinates) })
-        is Geometry.Polygon -> Geometry.Polygon(GeometryType.Polygon, (f.geometry as Geometry.Polygon).let {
+        is Geometry.MultiPoint -> Geometry.MultiPoint(coordinates = (f.geometry as Geometry.MultiPoint).let { point ->
+            point.coordinates.map { p-> projectPoint(p) }
+        })
+        is Geometry.LineString -> Geometry.LineString(coordinates = (f.geometry as Geometry.LineString).let {
+            it.coordinates.map { p -> projectPoint(p) }
+        })
+        is Geometry.MultiLineString -> Geometry.MultiLineString(coordinates = (f.geometry as Geometry.MultiLineString).let {
+            it.coordinates.map { line ->
+                line.map { p -> projectPoint(p) }
+            }
+        })
+        is Geometry.Polygon -> Geometry.Polygon(coordinates = (f.geometry as Geometry.Polygon).let {
             it.coordinates.map { ring ->
                 ring.map { p -> projectPoint(p) }
             }
@@ -26,10 +37,8 @@ fun projectFeature(f: Feature): Feature {
                 }
             }
         })
-        else -> TODO()
     }
     return Feature (
-            type = f.type,
             properties = f.properties,
             geometry = geometry
     )
@@ -48,24 +57,7 @@ fun projectPoint(p: List<Double>): List<Double> {
     return listOf(x, y)
 }
 
-fun calcBbox(f: Feature) {
-    when(f.geometry) {
-        is Geometry.Point -> calcBbox(listOf((f.geometry as Geometry.Point).coordinates), f.bbox)
-        is Geometry.Polygon -> {
-            calcBbox((f.geometry as Geometry.Polygon).coordinates.fold(listOf()) { list, ring ->
-                list + ring
-            }, f.bbox)
-        }
-        is Geometry.MultiPolygon -> {
-            calcBbox((f.geometry as Geometry.MultiPolygon).coordinates.fold(listOf()) { list, polygon ->
-                list + polygon.fold(listOf<List<Double>>()) { polyList, ring ->
-                    polyList + ring
-                }
-            }, f.bbox)
-        }
-        else -> TODO()
-    }
-}
+fun calcBbox(f: Feature) = calcBbox(foldCoordinates(f), f.bbox)
 
 fun calcBbox(points: List<List<Double>>, bbox: MutableList<Double>) {
     points.forEach {p ->
