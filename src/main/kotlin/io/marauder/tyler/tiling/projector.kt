@@ -71,7 +71,6 @@ fun calcBbox(points: List<List<Double>>, bbox: MutableList<Double>) {
 fun calcBbox(f: GeoJSON) {
     f.features.forEach {
         calcBbox(it)
-        //TODO: needs bboxes per feature
         f.bbox[0] = Math.min(it.bbox[0], f.bbox[0])
         f.bbox[2] = Math.max(it.bbox[2], f.bbox[2])
         f.bbox[1] = Math.min(it.bbox[1], f.bbox[1])
@@ -82,6 +81,17 @@ fun calcBbox(f: GeoJSON) {
 fun foldCoordinates(f: Feature) : List<List<Double>> {
     return when(f.geometry) {
         is Geometry.Point -> listOf((f.geometry as Geometry.Point).coordinates)
+        is Geometry.MultiPoint -> listOf((f.geometry as Geometry.MultiPoint).coordinates.fold(listOf()) { list, p ->
+            list + p
+        })
+        is Geometry.LineString -> listOf((f.geometry as Geometry.LineString).coordinates.fold(listOf()) { list, p ->
+            list + p
+        })
+        is Geometry.MultiLineString -> listOf((f.geometry as Geometry.MultiLineString).coordinates.fold(listOf()) { list, line ->
+            list + line.fold(listOf<Double>()) { pList, p ->
+                pList + p
+            }
+        })
         is Geometry.Polygon -> {
             (f.geometry as Geometry.Polygon).coordinates.fold(listOf()) { list, ring ->
                 list + ring
@@ -94,7 +104,6 @@ fun foldCoordinates(f: Feature) : List<List<Double>> {
                 }
             }
         }
-        else -> TODO()
     }
 }
 
@@ -123,8 +132,25 @@ fun transformTile(t: Tile) : Tile =
         )
 
 fun transformGeometry(g: Geometry, extend: Int, z: Int, x: Int, y: Int) : Geometry = when(g) {
-    is Geometry.Point -> Geometry.Point(g.type, transformPoint(g.coordinates, extend, z, x, y))
-    is Geometry.Polygon -> Geometry.Polygon(GeometryType.Polygon, g.coordinates.let {
+    is Geometry.Point -> Geometry.Point(coordinates = transformPoint(g.coordinates, extend, z, x, y))
+    is Geometry.MultiPoint -> Geometry.MultiPoint(coordinates = g.coordinates.let { p ->
+        p.map {
+            transformPoint(it, extend, z, x, y)
+        }
+    })
+    is Geometry.LineString -> Geometry.LineString(coordinates = g.coordinates.let { p ->
+        p.map {
+            transformPoint(it, extend, z, x, y)
+        }
+    })
+    is Geometry.MultiLineString -> Geometry.MultiLineString(coordinates = g.coordinates.let { line ->
+        line.map { p ->
+            p.map {
+                transformPoint(it, extend, z, x, y)
+            }
+        }
+    })
+    is Geometry.Polygon -> Geometry.Polygon(coordinates = g.coordinates.let {
         it.map { ring ->
             ring.map { p -> transformPoint(p, extend, z, x, y) }
         }
@@ -136,7 +162,6 @@ fun transformGeometry(g: Geometry, extend: Int, z: Int, x: Int, y: Int) : Geomet
             }
         }
     })
-    else -> TODO()
 }
 
 fun transformPoint(p: List<Double>, extend: Int, z: Int, x: Int, y: Int) : List<Double> =
