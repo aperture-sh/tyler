@@ -1,6 +1,9 @@
 package io.marauder.tyler.tiling
 
-import io.marauder.models.GeoJSON
+import io.marauder.supercharged.Clipper
+import io.marauder.supercharged.Intersector
+import io.marauder.supercharged.Projector
+import io.marauder.supercharged.models.GeoJSON
 import io.marauder.tyler.store.StoreClient
 import kotlinx.coroutines.*
 import kotlin.math.pow
@@ -15,13 +18,17 @@ class Tiler(
         private val extend: Int = 2096,
         private val buffer: Int = 64) {
 
+    private val projector = Projector()
+    private val intersector = Intersector()
+    private val clipper = Clipper()
+
     suspend fun tiler(input: GeoJSON) {
 
         input.features.take(maxInsert).chunked(chunkInsert).forEach {
             val bulk = GeoJSON(features = it)
 
             println("calculating bounding box: ${bulk.features.size} features")
-            calcBbox(bulk)
+            projector.calcBbox(bulk)
             println("start split")
 
             //TODO: wrap geometries at 180 degree
@@ -47,7 +54,7 @@ class Tiler(
 
     private fun traverseZoom(f: GeoJSON, z: Int) = GlobalScope.launch {
         (0..(2.0.pow(z.toDouble()).toInt())).forEach { x ->
-            val boundCheck = fcOutOfBounds(f, (1 shl z).toDouble(), (x).toDouble(), (1 + x).toDouble(), 0)
+            val boundCheck = intersector.fcOutOfBounds(f, (1 shl z).toDouble(), (x).toDouble(), (1 + x).toDouble(), 0)
 
             if (boundCheck == 1) return@forEach
             if (boundCheck == 0)
@@ -63,10 +70,10 @@ class Tiler(
         val k1 = 0.5 * buffer / extend
         val k3 = 1 + k1
 
-        val clipped = clip(f, z2.toDouble(), x - k1, x + k3, y - k1, y + k3)
+        val clipped = clipper.clip(f, z2.toDouble(), x - k1, x + k3, y - k1, y + k3)
 
         if (clipped.features.isNotEmpty()) {
-            calcBbox(clipped)
+            projector.calcBbox(clipped)
             print("\rencode: $z/$x/$y")
 
             runBlocking {

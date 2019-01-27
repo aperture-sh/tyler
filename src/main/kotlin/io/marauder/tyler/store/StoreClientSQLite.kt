@@ -1,8 +1,7 @@
 package io.marauder.tyler.store
 
-import io.marauder.models.Feature
-import io.marauder.models.GeoJSON
-import io.marauder.tyler.BoundingBox
+import io.marauder.supercharged.models.Feature
+import io.marauder.supercharged.models.GeoJSON
 import io.marauder.tyler.tiling.VT
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.json.JSON
@@ -152,7 +151,7 @@ class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
         }
     }
 
-    override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<BoundingBox>) : ByteArray? {
+    override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<List<Double>>) : ByteArray? {
         val sql = """
             SELECT tile_data FROM tiles WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
             """
