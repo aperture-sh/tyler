@@ -1,7 +1,6 @@
 package io.marauder.tyler.store
 
-import io.marauder.models.GeoJSON
-import io.marauder.tyler.BoundingBox
+import io.marauder.supercharged.models.GeoJSON
 import io.marauder.tyler.tiling.VT
 import kotlinx.serialization.ImplicitReflectionSerializer
 import java.io.ByteArrayOutputStream
@@ -33,7 +32,7 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<BoundingBox>): ByteArray? {
+    override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<List<Double>>): ByteArray? {
         return getTile(x, y, z)
     }
 

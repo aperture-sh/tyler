@@ -1,13 +1,10 @@
 package io.marauder.tyler.tiling
 
-import io.marauder.Engine
-import io.marauder.models.Feature
-import io.marauder.models.GeoJSON
-import io.marauder.models.Value
-import io.marauder.tyler.BoundingBox
-import io.marauder.tyler.Tile
+import io.marauder.supercharged.Encoder
+import io.marauder.supercharged.Intersector
+import io.marauder.supercharged.Projector
 import kotlinx.serialization.ImplicitReflectionSerializer
-
+import io.marauder.supercharged.models.*
 /**
  * Actual wrapper class to encoder and merge tiles using the marauder engine
  * @param extend Tile resolution
@@ -18,16 +15,18 @@ class VT(extend: Int = 4096,
          private val buffer: Int = 64,
          val layerName: String = "io.marauder.tyler") {
 
-    val engine = Engine(extend)
+    val engine = Encoder(extend)
+    private val projector = Projector()
+    private val intersector = Intersector()
 
     @ImplicitReflectionSerializer
     fun createTile(geoJSON: GeoJSON, z: Int, x: Int, y: Int): ByteArray {
-        return engine.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, layerName).toByteArray()
+        return engine.encode(projector.transformTile(Tile(geoJSON, 1 shl z, x, y)).geojson.features, layerName).toByteArray()
     }
 
     @ImplicitReflectionSerializer
     fun createTileTransform(geoJSON: GeoJSON, z: Int, x: Int, y: Int): ByteArray {
-        return engine.encode(transformTile(Tile(geoJSON, 1 shl z, x, y, 4096)).geojson.features, layerName).toByteArray()
+        return engine.encode(projector.transformTile(Tile(geoJSON, 1 shl z, x, y)).geojson.features, layerName).toByteArray()
     }
 
     fun mergeTiles(t1: ByteArray, t2: GeoJSON): ByteArray {
@@ -55,10 +54,10 @@ class VT(extend: Int = 4096,
         return engine.merge(t1, t2).toByteArray()
     }
 
-    fun filterTileBoxes(features: List<Feature>, boxes: List<BoundingBox>, z: Int, x: Int, y: Int) = features.filter { f ->
-        val coords = foldCoordinates(f)
+    fun filterTileBoxes(features: List<Feature>, boxes: List<List<Double>>, z: Int, x: Int, y: Int) = features.filter { f ->
+        val coords = projector.foldCoordinates(f)
         boxes
-                .map { box -> includesPoints(transformBBox(z, x, y, 4096, box), coords.map { listOf(it[0], it[1]) }) }
+                .map { box -> intersector.includesPoints(projector.transformBBox(z, x, y, box), coords.map { listOf(it[0], it[1]) }) }
                 .fold(false) { a, b -> a || b }
 
     }

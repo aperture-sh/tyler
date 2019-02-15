@@ -5,10 +5,9 @@ import com.mongodb.client.MongoDatabase
 import com.mongodb.client.gridfs.GridFSBucket
 import com.mongodb.client.gridfs.GridFSBuckets
 import com.mongodb.client.model.Filters
-import io.marauder.models.GeoJSON
-import io.marauder.tyler.BoundingBox
+import io.marauder.supercharged.models.GeoJSON
+import io.marauder.supercharged.models.Tile
 import io.marauder.tyler.tiling.VT
-import io.marauder.tyler.toID
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ImplicitReflectionSerializer
@@ -37,20 +36,20 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         gzip.write(tile)
         gzip.close()
 //        GlobalScope.launch {
-            val up = getGrid().openUploadStream(toID(z, x, y).toString())
+            val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
             up.write(out.toByteArray())
             up.close()
 //        }
     }
 
     override fun getTile(x: Int, y: Int, z: Int): ByteArray? =
-        GZIPInputStream(getGrid().openDownloadStream(toID(z, x, y).toString())).readBytes()
+        GZIPInputStream(getGrid().openDownloadStream(Tile.toID(z, x, y).toString())).readBytes()
 
     override fun getTileJson(x: Int, y: Int, z: Int): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<BoundingBox>): ByteArray? {
+    override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<List<Double>>): ByteArray? {
         return if (exists(x, y, z)) getTile(x, y, z) else null
     }
 
@@ -69,7 +68,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
             gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             GlobalScope.launch {
-                val up = getGrid().openUploadStream(toID(z, x, y).toString())
+                val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
                 up.write(out.toByteArray())
                 up.close()
             }
@@ -85,7 +84,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
             gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
 //            GlobalScope.launch {
-                val up = getGrid().openUploadStream(toID(z, x, y).toString())
+                val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
                 up.write(out.toByteArray())
                 up.close()
 //            }
@@ -98,7 +97,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
     private fun getGrid() : GridFSBucket = GridFSBuckets.create(database)
 
     private fun exists(x: Int, y: Int, z: Int) : Boolean =
-            getGrid().find(Filters.eq("filename", toID(z, x, y))).count() > 0
+            getGrid().find(Filters.eq("filename", Tile.toID(z, x, y))).count() > 0
 
     override fun clearStore() {
         database.drop()

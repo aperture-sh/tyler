@@ -10,10 +10,10 @@ import org.slf4j.event.*
 import java.time.*
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
-import io.marauder.models.GeoJSON
+import io.marauder.supercharged.Projector
+import io.marauder.supercharged.models.GeoJSON
 import io.marauder.tyler.store.StoreClientFS
 import io.marauder.tyler.tiling.Tiler
-import io.marauder.tyler.tiling.projectFeatures
 import io.marauder.tyler.store.StoreClientMongo
 import io.marauder.tyler.store.StoreClientSQLite
 import io.marauder.tyler.tiling.VT
@@ -99,8 +99,9 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
                     }
 
                     val time = measureTimeMillis {
+                            val projector = Projector()
                             val tyler = Tiler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
-                            tyler.tiler(projectFeatures(input))
+                            tyler.tiler(projector.projectFeatures(input))
                     }
                     println("time: $time")
                 }
