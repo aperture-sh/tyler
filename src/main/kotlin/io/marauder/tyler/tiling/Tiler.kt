@@ -15,7 +15,7 @@ class Tiler(
         private val maxInsert: Int = 500000,
         private val chunkInsert: Int = 250000,
         private val threads: Int = 2,
-        private val extend: Int = 2096,
+        private val extend: Int = 4096,
         private val buffer: Int = 64) {
 
     private val projector = Projector()
