@@ -53,7 +53,7 @@ dependencies {
     compile "io.ktor:ktor-websockets:$ktor_version"
     compile "io.ktor:ktor-gson:$ktor_version"
 
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.10.0"
+    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.9.1"
     
     compile group: 'io.marauder.supercharger', name: 'encoder', version: '0.0.3-SNAPSHOT', changing: true
     compile group: 'io.marauder.supercharger', name: 'models', version: '0.0.3-SNAPSHOT', changing: true
