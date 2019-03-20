@@ -8,7 +8,7 @@ cache:
     - .gradle/caches
 
 build:
-  image: openjdk:8
+  image: amazoncorretto:8
   stage: build
   script:
     - ./gradlew build
@@ -17,7 +17,7 @@ build:
     - build
     expire_in: 30 minutes
 
-build_image_master:
+build_image:
   image: docker:stable
   stage: build
   services:
@@ -31,29 +31,7 @@ build_image_master:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
   script:
   - docker pull $UPSTREAM_IMAGE:latest || true
-  - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:latest --build-arg artifactory_user --build-arg artifactory_password --build-arg artifactory_contextUrl .
+  - docker build --cache-from $UPSTREAM_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF  --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME --tag $CI_REGISTRY_IMAGE:latest --build-arg artifactory_user --build-arg artifactory_password --build-arg artifactory_contextUrl .
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-  - docker push $CI_REGISTRY_IMAGE:latest
-  only:
-  - master
-
-build_image_branches:
-  image: docker:stable
-  stage: build
-  services:
-  - docker:dind
-  variables:
-    UPSTREAM_IMAGE: $CI_REGISTRY/marauder/$CI_PROJECT_NAME
-    DOCKER_HOST: tcp://docker:2375/
-  # Improve performance by enable d_type support for backing xfs filesystem
-  #   DOCKER_DRIVER: overlay2
-  before_script:
-  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-  script:
-  - docker pull $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME || true
-  - docker build --cache-from $UPSTREAM_IMAGE:$CI_COMMIT_REF_NAME --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME --build-arg artifactory_user --build-arg artifactory_password --build-arg artifactory_contextUrl .
-  - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-  - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-  except:
-  - master
-
+  - if [ "${CI_COMMIT_REF_NAME}" != "master" ]; then docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME; fi;
+  - if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then docker push $CI_REGISTRY_IMAGE:latest; fi;
