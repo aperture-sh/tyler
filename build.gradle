@@ -32,14 +32,6 @@ repositories {
     mavenCentral()
     jcenter()
     maven { url "https://kotlin.bintray.com/kotlinx" }
-    maven {
-        url = rootProject.hasProperty("art_url") ? "$art_url" : "$System.env.artifactory_contextUrl"
-        credentials {
-            username = rootProject.hasProperty("art_username") ? "$art_username" : "$System.env.artifactory_user"
-            password = rootProject.hasProperty("art_password") ? "$art_password" : "$System.env.artifactory_password"
-        }
-    }
-
 }
 
 dependencies {
