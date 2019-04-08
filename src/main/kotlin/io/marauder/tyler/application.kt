@@ -14,7 +14,7 @@ import io.marauder.supercharged.Projector
 import io.marauder.supercharged.models.Feature
 import io.marauder.supercharged.models.GeoJSON
 import io.marauder.tyler.store.StoreClientFS
-import io.marauder.tyler.tiling.Tiler
+import io.marauder.tyler.tiling.Tyler
 import io.marauder.tyler.store.StoreClientMongo
 import io.marauder.tyler.store.StoreClientSQLite
 import io.marauder.tyler.tiling.VT
@@ -26,13 +26,11 @@ import kotlinx.serialization.json.JSON
 import kotlinx.serialization.json.JsonParsingException
 import kotlinx.serialization.parse
 import java.io.File
-import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
     @ImplicitReflectionSerializer
     fun Application.module() {
-
         val minZoom = environment.config.propertyOrNull("ktor.application.min_zoom")?.getString()?.toInt() ?: 2
         val maxZoom = environment.config.propertyOrNull("ktor.application.max_zoom")?.getString()?.toInt() ?: 15
         val baseLayer = environment.config.propertyOrNull("ktor.application.base_layer")?.getString() ?: "io.marauder.tyler"
@@ -94,7 +92,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
                 GlobalScope.launch(newSingleThreadContext("tiling-process-1")) {
                     val projector = Projector()
-                    val tyler = Tiler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                    val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
                     tyler.tiler(projector.projectFeatures(input))
                 }
 
@@ -109,7 +107,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
                 val geojson = GeoJSON(features = features)
                 GlobalScope.launch {
                     val projector = Projector()
-                    val tyler = Tiler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                    val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
                     val neu = projector.projectFeatures(geojson)
                     tyler.tiler(neu)
                 }

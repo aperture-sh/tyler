@@ -6,9 +6,10 @@ import io.marauder.supercharged.Projector
 import io.marauder.supercharged.models.GeoJSON
 import io.marauder.tyler.store.StoreClient
 import kotlinx.coroutines.*
+import org.slf4j.LoggerFactory
 import kotlin.math.pow
 
-class Tiler(
+class Tyler(
         private val client: StoreClient,
         private val minZoom: Int = 2,
         private val maxZoom: Int = 15,
@@ -22,16 +23,20 @@ class Tiler(
     private val intersector = Intersector()
     private val clipper = Clipper()
 
+    companion object {
+        private val log = LoggerFactory.getLogger(Tyler::class.java)
+    }
+
     suspend fun tiler(input: GeoJSON) {
 
         input.features.take(maxInsert).chunked(chunkInsert).forEach {
             val bulk = GeoJSON(features = it)
 
-            println("calculating bounding box: ${bulk.features.size} features")
+            log.info("Calculating bounding box for ${bulk.features.size} features")
             projector.calcBbox(bulk)
-            println("start split")
+            log.info("Start tiling ${bulk.features.size} features")
 
-            //TODO: wrap geometries at 180 degree
+            //TODO: clip each feature in a reactive way
             //wrap -> left + 1 (offset), right - 1 (offset)
             /*val buffer: Double = BUFFER.toDouble() / EXTENT
         val left = clip(input, 1.0, -1 -buffer, buffer, 0)
@@ -41,14 +46,15 @@ class Tiler(
 //        val merged = FeatureCollection(features = left.features + right.features + center.features)
 
             (minZoom..maxZoom).chunked(threads).forEach { zoomLvL ->
-                println("\rzoom level in parallel: $zoomLvL")
+                log.info("Zoom levels tiled in parallel: $zoomLvL")
                 val jobs = mutableListOf<Job>()
                 zoomLvL.forEach { z ->
                     jobs.add(traverseZoom(bulk, z))
                 }
                 jobs.forEach { job -> job.join() }
+                log.info("Zoom levels finished: $zoomLvL")
             }
-            println("\rfinished split: ${bulk.features.size} features")
+            log.info("Finished Tiling ${bulk.features.size} features")
         }
     }
 
@@ -73,12 +79,12 @@ class Tiler(
         val clipped = clipper.clip(f, z2.toDouble(), x - k1, x + k3, y - k1, y + k3)
 
         if (clipped.features.isNotEmpty()) {
+            log.debug("Start building tile $z/$x/$y")
             projector.calcBbox(clipped)
-            print("\rencode: $z/$x/$y")
-
             runBlocking {
                 client.updateTile(x, y, z, clipped)
             }
+            log.debug("Finished building tile $z/$x/$y")
         }
     }
 
