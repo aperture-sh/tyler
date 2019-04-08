@@ -11,6 +11,7 @@ import java.time.*
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.marauder.supercharged.Projector
+import io.marauder.supercharged.models.Feature
 import io.marauder.supercharged.models.GeoJSON
 import io.marauder.tyler.store.StoreClientFS
 import io.marauder.tyler.tiling.Tiler
@@ -88,25 +89,32 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
         }
 
         routing {
-            post("/") {
+            post("/file") {
                 val input = JSON.plain.parse<GeoJSON>(call.receiveText())
 
                 GlobalScope.launch(newSingleThreadContext("tiling-process-1")) {
-                    //TODO: start tiling in independent thread
-                    if (call.parameters["clear"] != null) {
-                        println("clear")
-                        store.clearStore()
-                    }
-
-                    val time = measureTimeMillis {
-                            val projector = Projector()
-                            val tyler = Tiler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
-                            tyler.tiler(projector.projectFeatures(input))
-                    }
-                    println("time: $time")
+                    val projector = Projector()
+                    val tyler = Tiler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                    tyler.tiler(projector.projectFeatures(input))
                 }
 
-                call.respondText("tiling started", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
+                call.respondText("Features Accepted", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
+            }
+
+            post("/") {
+                val features = mutableListOf<Feature>()
+                call.receiveStream().bufferedReader().useLines { lines ->
+                    lines.forEach { features.add(JSON.plain.parse(it)) }
+                }
+                val geojson = GeoJSON(features = features)
+                GlobalScope.launch {
+                    val projector = Projector()
+                    val tyler = Tiler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                    val neu = projector.projectFeatures(geojson)
+                    tyler.tiler(neu)
+                }
+
+                call.respondText("Features Accepted", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
             }
 
             get("/{z}/{x}/{y_type}") {

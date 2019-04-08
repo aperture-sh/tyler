@@ -9,7 +9,8 @@
 
 ### REST API
 
-* `POST /` accepts GeoJSON files to import, `gzip` compression is optional
+* `POST /` accepts GeoJSON features separated by line to import
+* `POST /file` accepts GeoJSON files to import
 * `GET /:z/:x/:y.mvt` serves MapBox Vector tiles
 * `DELETE /` clears the whole database
 * `GET /static/index.html` provides a very simple visualization web application
