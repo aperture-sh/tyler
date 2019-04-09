@@ -9,6 +9,12 @@
 ### Quick Start
 `./gradlew run`
 
+### Docker Quickstart
+
+The last release is pushed to `:latest`. The `master` branch is always pushed to `:unstable`.  
+`docker pull maraud3r/tyler:unstable`  
+`docker run --rm -it -p 23513:23513 maraud3r/tyler:unstable`  
+
 ### REST API
 
 * `POST /` accepts GeoJSON features separated by line to import
