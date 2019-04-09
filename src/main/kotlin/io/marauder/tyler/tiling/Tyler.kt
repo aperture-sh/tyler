@@ -30,26 +30,34 @@ class Tyler(
     suspend fun tiler(input: GeoJSON) {
 
         input.features.take(maxInsert).chunked(chunkInsert).forEach {
+
             val bulk = GeoJSON(features = it)
 
             log.info("Calculating bounding box for ${bulk.features.size} features")
             projector.calcBbox(bulk)
+
+            // wrap -> left + 1 (offset), right - 1 (offset)
+            log.info("Start wrapping ${it.size} features at 180 degree")
+            val scaleBuffer: Double = buffer.toDouble() / extend
+            val wrapped = bulk.features.flatMap { f ->
+                listOfNotNull(
+                        clipper.clip(f, 1.0, -1 - scaleBuffer, scaleBuffer, 0.0, 1.0,true),
+                        clipper.clip(f, 1.0,  1 - scaleBuffer, 2 + scaleBuffer, 0.0, 1.0, true),
+                        clipper.clip(f, 1.0,  -scaleBuffer, 1 + scaleBuffer, 0.0, 1.0, true)
+                )
+            }
+            log.info("Finished wrapping ${it.size} features at 180 degree")
+
+            val bulkWrapped = GeoJSON(features = wrapped)
+            log.info("Calculating bounding box for ${bulk.features.size} features")
+            projector.calcBbox(bulkWrapped)
+
             log.info("Start tiling ${bulk.features.size} features")
-
-            //TODO: clip each feature in a reactive way
-            //wrap -> left + 1 (offset), right - 1 (offset)
-            /*val buffer: Double = BUFFER.toDouble() / EXTENT
-        val left = clip(input, 1.0, -1 -buffer, buffer, 0)
-        val right = clip(input, 1.0, 1 -buffer, 2+buffer, 0)
-        val center = clip(input, 1.0, -buffer, 1+buffer, 0)*/
-
-//        val merged = FeatureCollection(features = left.features + right.features + center.features)
-
             (minZoom..maxZoom).chunked(threads).forEach { zoomLvL ->
                 log.info("Zoom levels tiled in parallel: $zoomLvL")
                 val jobs = mutableListOf<Job>()
                 zoomLvL.forEach { z ->
-                    jobs.add(traverseZoom(bulk, z))
+                    jobs.add(traverseZoom(bulkWrapped, z))
                 }
                 jobs.forEach { job -> job.join() }
                 log.info("Zoom levels finished: $zoomLvL")
