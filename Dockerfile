@@ -3,13 +3,10 @@ FROM openjdk:8-jdk-alpine AS build
 ADD . /build
 WORKDIR /build
 
-ARG artifactory_user
-ARG artifactory_password
-ARG artifactory_contextUrl
-
 RUN ./gradlew shadowJar
 
 FROM openjdk:8-jre-alpine
+MAINTAINER Florian Zouhar <zouhar@marauder.io>
 
 ENV APPLICATION_USER ktor
 RUN adduser -D -g '' $APPLICATION_USER
