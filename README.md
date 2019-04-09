@@ -2,6 +2,11 @@
 
 [![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/marauder-io/tyler.svg?branch=master)](https://travis-ci.org/marauder-io/tyler)
 
+The Tyler is a stateless component and provides a REST interface for vector tile storage maintenance.
+
+In favor of it simplicity there is nothing else needed besides a running server oder docker environment.
+One can use POST requests to add more geospatial features to the database. The tile endpoint can be used to build a mapping interface using Mapbox GLJS or OpenLayers.
+
 ## Vector Tiling Server using KTOR
 
 `application.kt` contains the main module to start the server application.
@@ -28,7 +33,11 @@ The last release is pushed to `:latest`. The `master` branch is always pushed to
 The server can be configured using the `resources/application.conf` HOCON file.
 Available storage types are `sqlite`, `mongo`, `fs`. 
 
-Be aware the filesystem option (`fs`) utilizes the harddisk and can store millions of files.
+Be aware the filesystem option (`fs`) utilizes the hard disk and can store millions of files.
+
+### Hint
+
+For now we support only one layer. An implementation of multiple sub-layers beyond the base layer will be implemented soon.
 
 License
 -------
