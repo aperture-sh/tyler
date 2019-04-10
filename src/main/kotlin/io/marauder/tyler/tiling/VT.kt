@@ -6,7 +6,7 @@ import io.marauder.supercharged.Projector
 import kotlinx.serialization.ImplicitReflectionSerializer
 import io.marauder.supercharged.models.*
 /**
- * Actual wrapper class to encoder and merge tiles using the marauder engine
+ * Wrapper class to encode and merge tiles using the marauder engine
  * @param extend Tile resolution
  * @param buffer Tile buffer
  * @param layerName the name of the tile layer to be created
