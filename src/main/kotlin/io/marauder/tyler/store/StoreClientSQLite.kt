@@ -167,7 +167,7 @@ class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
 
                 val os = ByteArrayOutputStream()
                 val gzip = GZIPOutputStream(os)
-                gzip.write(vt.engine.encode(features, vt.layerName).toByteArray())
+                gzip.write(vt.engine.encode(features, vt.baseLayer).toByteArray())
                 gzip.close()
 
                 os.toByteArray()
