@@ -11,7 +11,7 @@ import java.util.zip.GZIPOutputStream
 class StoreClientFS(private val folder: String, private val vt: VT) : StoreClient {
 
     override fun setTile(x: Int, y: Int, z: Int, tile: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override fun setTile(x: Int, y: Int, z: Int, tile: ByteArray) {
@@ -29,7 +29,7 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
     }
 
     override fun getTileJson(x: Int, y: Int, z: Int): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<List<Double>>): ByteArray? {
@@ -37,11 +37,11 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
     }
 
     override fun deleteTile(x: Int, y: Int, z: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: String, layer: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: ByteArray) {
