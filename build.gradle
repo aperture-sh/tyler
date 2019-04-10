@@ -18,7 +18,7 @@ apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'tyler'
-version '0.0.3-SNAPSHOT'
+version '0.1.0-SNAPSHOT'
 mainClassName = "io.ktor.server.netty.EngineMain"
 
 sourceSets {
@@ -48,11 +48,11 @@ dependencies {
 
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.9.1"
     
-    compile group: 'io.marauder.supercharger', name: 'encoder', version: '0.0.4-SNAPSHOT', changing: true
-    compile group: 'io.marauder.supercharger', name: 'models', version: '0.0.4-SNAPSHOT', changing: true
-    compile group: 'io.marauder.supercharger', name: 'projector', version: '0.0.4-SNAPSHOT', changing: true
-    compile group: 'io.marauder.supercharger', name: 'utils', version: '0.0.4-SNAPSHOT', changing: true
-    compile group: 'io.marauder.supercharger', name: 'clipper', version: '0.0.4-SNAPSHOT', changing: true
+    compile group: 'io.marauder.supercharger', name: 'encoder', version: '0.1.0-SNAPSHOT', changing: true
+    compile group: 'io.marauder.supercharger', name: 'models', version: '0.1.0-SNAPSHOT', changing: true
+    compile group: 'io.marauder.supercharger', name: 'projector', version: '0.1.0-SNAPSHOT', changing: true
+    compile group: 'io.marauder.supercharger', name: 'utils', version: '0.1.0-SNAPSHOT', changing: true
+    compile group: 'io.marauder.supercharger', name: 'clipper', version: '0.1.0-SNAPSHOT', changing: true
 
     compile 'com.google.protobuf:protobuf-java:3.0.0'
 

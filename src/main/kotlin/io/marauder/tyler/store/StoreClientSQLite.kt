@@ -68,11 +68,11 @@ class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
         out.close()
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: String) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: String, layer: String) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), JSON.plain.parse<GeoJSON>(tile)))
+            gzip.write(vt.mergeTiles(checkNotNull(getTile(x, y, z)), JSON.plain.parse(tile), layer))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) -1 - y}'
@@ -104,11 +104,11 @@ class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
         }
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON, layer: String) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTiles(checkNotNull(getTile(x, y, z)), tile, layer))
             gzip.close()
             val sql = """
                 UPDATE tiles SET tile_data = ? WHERE zoom_level = '$z' AND tile_column = '$x' AND tile_row = '${(1 shl z) - 1 - y}'
@@ -118,7 +118,7 @@ class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
             stmt.execute()
             stmt.close()
         } else {
-            setTile(x, y, z, vt.createTileTransform(tile, z, x, y))
+            setTile(x, y, z, vt.createTileTransform(tile, z, x, y, layer))
         }
     }
 
@@ -167,7 +167,8 @@ class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
 
                 val os = ByteArrayOutputStream()
                 val gzip = GZIPOutputStream(os)
-                gzip.write(vt.engine.encode(features, vt.layerName).toByteArray())
+                //TODO: filtering not working for now
+                gzip.write(vt.engine.encode(features, "tmp").toByteArray())
                 gzip.close()
 
                 os.toByteArray()

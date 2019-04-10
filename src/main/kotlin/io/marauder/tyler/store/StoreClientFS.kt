@@ -11,7 +11,7 @@ import java.util.zip.GZIPOutputStream
 class StoreClientFS(private val folder: String, private val vt: VT) : StoreClient {
 
     override fun setTile(x: Int, y: Int, z: Int, tile: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override fun setTile(x: Int, y: Int, z: Int, tile: ByteArray) {
@@ -29,7 +29,7 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
     }
 
     override fun getTileJson(x: Int, y: Int, z: Int): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<List<Double>>): ByteArray? {
@@ -37,18 +37,18 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
     }
 
     override fun deleteTile(x: Int, y: Int, z: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun updateTile(x: Int, y: Int, z: Int, tile: String, layer: String) {
+        TODO("not implemented")
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: ByteArray) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {
@@ -56,15 +56,15 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
         }
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON, layer: String) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTiles(checkNotNull(getTile(x, y, z)), tile, layer))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {
-            setTile(x, y, z, vt.createTileTransform(tile, z, x, y))
+            setTile(x, y, z, vt.createTileTransform(tile, z, x, y, layer))
         }
     }
 

@@ -22,7 +22,7 @@ The last release is pushed to `:latest`. The `master` branch is always pushed to
 
 ### REST API
 
-* `POST /:layer?` accepts GeoJSON features separated by line to import, `geojson=true` indicates to import a GeoJSON file, `layer` has no fucntion for now
+* `POST /:layer?` accepts GeoJSON features separated by line to import, `geojson=true` indicates to import a GeoJSON file, features will be imported to given `layer` or the base layer
 * `GET /:z/:x/:y.mvt` serves MapBox Vector tiles
 * `DELETE /` clears the whole database
 * `GET /static/index.html` provides a very simple visualization web application
@@ -36,7 +36,7 @@ Be aware the filesystem option (`fs`) utilizes the hard disk and can store milli
 
 ### Hint
 
-For now we support only one layer. An implementation of multiple sub-layers beyond the base layer will be implemented soon.
+Multi-Layer is supported now. Keep in mind that multi-layer usage slows down the tile creating process.
 
 License
 -------
