@@ -18,7 +18,7 @@ apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'tyler'
-version '0.1.0-SNAPSHOT'
+version '0.1.0'
 mainClassName = "io.ktor.server.netty.EngineMain"
 
 sourceSets {
