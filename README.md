@@ -22,8 +22,7 @@ The last release is pushed to `:latest`. The `master` branch is always pushed to
 
 ### REST API
 
-* `POST /` accepts GeoJSON features separated by line to import
-* `POST /file` accepts GeoJSON files to import
+* `POST /:layer?` accepts GeoJSON features separated by line to import, `geojson=true` indicates to import a GeoJSON file, `layer` has no fucntion for now
 * `GET /:z/:x/:y.mvt` serves MapBox Vector tiles
 * `DELETE /` clears the whole database
 * `GET /static/index.html` provides a very simple visualization web application

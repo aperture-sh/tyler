@@ -87,30 +87,30 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
         }
 
         routing {
-            post("/file") {
-                val input = JSON.plain.parse<GeoJSON>(call.receiveText())
-
-                GlobalScope.launch(newSingleThreadContext("tiling-process-1")) {
-                    val projector = Projector()
-                    val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
-                    tyler.tiler(projector.projectFeatures(input))
+            post("/{layer?}") {
+                val layer = "$baseLayer${call.parameters["layer"] ?: ""}"
+                if (call.parameters["geojson"] == "true") {
+                    val input = JSON.plain.parse<GeoJSON>(call.receiveText())
+                    GlobalScope.launch {
+                        val projector = Projector()
+                        val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                        tyler.tiler(projector.projectFeatures(input))
+                    }
+                } else {
+                    val features = mutableListOf<Feature>()
+                    call.receiveStream().bufferedReader().useLines { lines ->
+                        lines.forEach { features.add(JSON.plain.parse(it)) }
+                    }
+                    val geojson = GeoJSON(features = features)
+                    GlobalScope.launch {
+                        val projector = Projector()
+                        val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                        val neu = projector.projectFeatures(geojson)
+                        tyler.tiler(neu)
+                    }
                 }
 
-                call.respondText("Features Accepted", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
-            }
 
-            post("/") {
-                val features = mutableListOf<Feature>()
-                call.receiveStream().bufferedReader().useLines { lines ->
-                    lines.forEach { features.add(JSON.plain.parse(it)) }
-                }
-                val geojson = GeoJSON(features = features)
-                GlobalScope.launch {
-                    val projector = Projector()
-                    val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
-                    val neu = projector.projectFeatures(geojson)
-                    tyler.tiler(neu)
-                }
 
                 call.respondText("Features Accepted", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
             }
