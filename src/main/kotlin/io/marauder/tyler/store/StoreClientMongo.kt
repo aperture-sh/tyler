@@ -89,7 +89,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
                 up.close()
 //            }
         } else {
-            setTile(x, y, z, vt.createTileTransform(tile, z, x, y))
+            setTile(x, y, z, vt.createTileTransform(tile, z, x, y, layer))
         }
     }
 

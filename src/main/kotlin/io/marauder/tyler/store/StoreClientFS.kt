@@ -64,7 +64,7 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {
-            setTile(x, y, z, vt.createTileTransform(tile, z, x, y))
+            setTile(x, y, z, vt.createTileTransform(tile, z, x, y, layer))
         }
     }
 

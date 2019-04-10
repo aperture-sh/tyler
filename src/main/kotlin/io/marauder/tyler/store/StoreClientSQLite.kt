@@ -118,7 +118,7 @@ class StoreClientSQLite(db: String, private val vt: VT) : StoreClient {
             stmt.execute()
             stmt.close()
         } else {
-            setTile(x, y, z, vt.createTileTransform(tile, z, x, y))
+            setTile(x, y, z, vt.createTileTransform(tile, z, x, y, layer))
         }
     }
 
