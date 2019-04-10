@@ -12,34 +12,29 @@ import io.marauder.supercharged.models.*
  * @param baseLayer the name of the tile base layer to be created
  */
 class VT(extend: Int = 4096,
-         private val buffer: Int = 64,
-         val baseLayer: String = "io.marauder.tyler") {
+         private val buffer: Int = 64) {
 
     val engine = Encoder(extend)
     private val projector = Projector()
     private val intersector = Intersector()
 
     @ImplicitReflectionSerializer
-    fun createTile(geoJSON: GeoJSON, z: Int, x: Int, y: Int, subLayer: String = ""): ByteArray {
-        val layer = if (subLayer != "") "$baseLayer.$subLayer" else baseLayer
+    fun createTile(geoJSON: GeoJSON, z: Int, x: Int, y: Int, layer: String = ""): ByteArray {
         return engine.encode(projector.transformTile(Tile(geoJSON, 1 shl z, x, y)).geojson.features, layer).toByteArray()
     }
 
     @ImplicitReflectionSerializer
-    fun createTileTransform(geoJSON: GeoJSON, z: Int, x: Int, y: Int, subLayer: String = ""): ByteArray {
-        val layer = if (subLayer != "") "$baseLayer.$subLayer" else baseLayer
+    fun createTileTransform(geoJSON: GeoJSON, z: Int, x: Int, y: Int, layer: String = ""): ByteArray {
         return engine.encode(projector.transformTile(Tile(geoJSON, 1 shl z, x, y)).geojson.features, layer).toByteArray()
     }
 
-    fun mergeTiles(t1: ByteArray, t2: GeoJSON, subLayer: String = ""): ByteArray {
-        val layer = if (subLayer != "") "$baseLayer.$subLayer" else baseLayer
+    fun mergeTiles(t1: ByteArray, t2: GeoJSON, layer: String = ""): ByteArray {
         val tile1 = engine.deserialize(t1)
         val tile2 = engine.encode(t2.features, layer)
         return engine.merge(tile1, tile2).toByteArray()
     }
 
-    fun mergeTilesInject(t1: ByteArray, t2: GeoJSON, subLayer: String = ""): ByteArray {
-        val layer = if (subLayer != "") "$baseLayer.$subLayer" else baseLayer
+    fun mergeTilesInject(t1: ByteArray, t2: GeoJSON, layer: String = ""): ByteArray {
         val tile1 = engine.deserialize(t1)
         val layer1 = tile1.getLayers(0)
 

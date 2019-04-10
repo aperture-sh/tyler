@@ -33,14 +33,14 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
     fun Application.module() {
         val minZoom = environment.config.propertyOrNull("ktor.application.min_zoom")?.getString()?.toInt() ?: 2
         val maxZoom = environment.config.propertyOrNull("ktor.application.max_zoom")?.getString()?.toInt() ?: 15
-        val baseLayer = environment.config.propertyOrNull("ktor.application.base_layer")?.getString() ?: "io.marauder.tyler"
+        val baseLayer = environment.config.propertyOrNull("ktor.application.base_layer")?.getString() ?: ""
         val extend = environment.config.propertyOrNull("ktor.application.extend")?.getString()?.toInt() ?: 4096
         val buffer = environment.config.propertyOrNull("ktor.application.buffer")?.getString()?.toInt() ?: 64
         val chunkInsert = environment.config.propertyOrNull("ktor.application.chunk_insert")?.getString()?.toInt() ?: 500_000
         val maxInsert = environment.config.propertyOrNull("ktor.application.max_insert")?.getString()?.toInt() ?: Int.MAX_VALUE
         val threads = environment.config.propertyOrNull("ktor.application.threads")?.getString()?.toInt() ?: 2
 
-        val vt = VT(extend, buffer, baseLayer)
+        val vt = VT(extend, buffer)
 
         val store = when (environment.config.propertyOrNull("ktor.application.store.type")?.getString() ?: "sqlite") {
             "mongo" -> StoreClientMongo(
@@ -88,31 +88,34 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
         routing {
             post("/{layer?}") {
-                val layer = "$baseLayer${call.parameters["layer"] ?: ""}"
-                if (call.parameters["geojson"] == "true") {
-                    val input = JSON.plain.parse<GeoJSON>(call.receiveText())
-                    GlobalScope.launch {
-                        val projector = Projector()
-                        val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
-                        tyler.tiler(projector.projectFeatures(input))
-                    }
+                val importLayer = call.parameters["layer"] ?: ""
+                if (baseLayer == "" && importLayer == "") {
+                    call.respondText("Import layer must not be an empty string", status = HttpStatusCode.BadRequest)
                 } else {
-                    val features = mutableListOf<Feature>()
-                    call.receiveStream().bufferedReader().useLines { lines ->
-                        lines.forEach { features.add(JSON.plain.parse(it)) }
+                    val layer = "$baseLayer${if (baseLayer != "" && importLayer != "") "." else ""}$importLayer"
+                    if (call.parameters["geojson"] == "true") {
+                        val input = JSON.plain.parse<GeoJSON>(call.receiveText())
+                        GlobalScope.launch {
+                            val projector = Projector()
+                            val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                            tyler.tiler(projector.projectFeatures(input), layer)
+                        }
+                    } else {
+                        val features = mutableListOf<Feature>()
+                        call.receiveStream().bufferedReader().useLines { lines ->
+                            lines.forEach { features.add(JSON.plain.parse(it)) }
+                        }
+                        val geojson = GeoJSON(features = features)
+                        GlobalScope.launch {
+                            val projector = Projector()
+                            val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
+                            val neu = projector.projectFeatures(geojson)
+                            tyler.tiler(neu)
+                        }
                     }
-                    val geojson = GeoJSON(features = features)
-                    GlobalScope.launch {
-                        val projector = Projector()
-                        val tyler = Tyler(store, minZoom, maxZoom, maxInsert, chunkInsert, threads, extend, buffer)
-                        val neu = projector.projectFeatures(geojson)
-                        tyler.tiler(neu)
-                    }
+
+                    call.respondText("Features Accepted", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
                 }
-
-
-
-                call.respondText("Features Accepted", contentType = ContentType.Text.Plain, status = HttpStatusCode.Accepted)
             }
 
             get("/{z}/{x}/{y_type}") {

@@ -57,7 +57,7 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: String) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: String, layer: String) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -77,11 +77,11 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
         }
     }
 
-    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON) {
+    override fun updateTile(x: Int, y: Int, z: Int, tile: GeoJSON, layer: String) {
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile, layer))
             gzip.close()
 //            GlobalScope.launch {
                 val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())

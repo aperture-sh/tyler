@@ -27,7 +27,7 @@ class Tyler(
         private val log = LoggerFactory.getLogger(Tyler::class.java)
     }
 
-    suspend fun tiler(input: GeoJSON) {
+    suspend fun tiler(input: GeoJSON, layer: String = "") {
 
         input.features.take(maxInsert).chunked(chunkInsert).forEach {
 
@@ -57,7 +57,7 @@ class Tyler(
                 log.info("Zoom levels tiled in parallel: $zoomLvL")
                 val jobs = mutableListOf<Job>()
                 zoomLvL.forEach { z ->
-                    jobs.add(traverseZoom(bulkWrapped, z))
+                    jobs.add(traverseZoom(bulkWrapped, z, layer))
                 }
                 jobs.forEach { job -> job.join() }
                 log.info("Zoom levels finished: $zoomLvL")
@@ -66,19 +66,19 @@ class Tyler(
         }
     }
 
-    private fun traverseZoom(f: GeoJSON, z: Int) = GlobalScope.launch {
+    private fun traverseZoom(f: GeoJSON, z: Int, layer: String = "") = GlobalScope.launch {
         (0..(2.0.pow(z.toDouble()).toInt())).forEach { x ->
             val boundCheck = intersector.fcOutOfBounds(f, (1 shl z).toDouble(), (x).toDouble(), (1 + x).toDouble(), 0)
 
             if (boundCheck == 1) return@forEach
             if (boundCheck == 0)
                 (0..(2.0.pow(z.toDouble()).toInt())).forEach { y ->
-                    split(f, z, x, y)
+                    split(f, z, x, y, layer)
                 }
         }
     }
 
-    private fun split(f: GeoJSON, z: Int, x: Int, y: Int) {
+    private fun split(f: GeoJSON, z: Int, x: Int, y: Int, layer: String = "") {
         val z2 = 1 shl (if (z == 0) 0 else z)
 
         val k1 = 0.5 * buffer / extend
@@ -90,7 +90,7 @@ class Tyler(
             log.debug("Start building tile $z/$x/$y")
             projector.calcBbox(clipped)
             runBlocking {
-                client.updateTile(x, y, z, clipped)
+                client.updateTile(x, y, z, clipped, layer)
             }
             log.debug("Finished building tile $z/$x/$y")
         }
