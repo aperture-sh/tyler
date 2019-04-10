@@ -49,6 +49,10 @@ class VT(extend: Int = 4096,
         return engine.encode(t2.features, layer, keyList, valueList, layer1.featuresList).toByteArray()
     }
 
+    fun mergeTiles(t1: ByteArray, t2: ByteArray) : ByteArray {
+        return engine.merge(t1, t2).toByteArray()
+    }
+
     fun mergeTilesInject(t1: ByteArray, t2: ByteArray): ByteArray {
         return engine.merge(t1, t2).toByteArray()
     }

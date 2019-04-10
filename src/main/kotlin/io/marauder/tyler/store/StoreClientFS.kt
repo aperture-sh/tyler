@@ -48,7 +48,7 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile))
+            gzip.write(vt.mergeTiles(checkNotNull(getTile(x, y, z)), tile))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {
@@ -60,7 +60,7 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
         if (exists(x, y, z)) {
             val out = ByteArrayOutputStream()
             val gzip = GZIPOutputStream(out)
-            gzip.write(vt.mergeTilesInject(checkNotNull(getTile(x, y, z)), tile, layer))
+            gzip.write(vt.mergeTiles(checkNotNull(getTile(x, y, z)), tile, layer))
             gzip.close()
             File("$folder/$z/$x/$y.mvt").writeBytes(out.toByteArray())
         } else {
