@@ -11,7 +11,7 @@ import java.util.zip.GZIPOutputStream
 class StoreClientFS(private val folder: String, private val vt: VT) : StoreClient {
 
     override fun setTile(x: Int, y: Int, z: Int, tile: String) {
-        TODO("not implemented")
+        File("$folder/$z/$x/$y.json").writeBytes(tile.toByteArray())
     }
 
     override fun setTile(x: Int, y: Int, z: Int, tile: ByteArray) {
@@ -29,7 +29,8 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
     }
 
     override fun getTileJson(x: Int, y: Int, z: Int): String? {
-        TODO("not implemented")
+        val file = File("${folder}/$z/$x/$y.json")
+        return if (file.exists()) file.readText() else null
     }
 
     override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<List<Double>>): ByteArray? {
@@ -37,11 +38,11 @@ class StoreClientFS(private val folder: String, private val vt: VT) : StoreClien
     }
 
     override fun deleteTile(x: Int, y: Int, z: Int) {
-        TODO("not implemented")
+        File("${folder}/$z/$x/$y.mvt").delete()
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: String, layer: String) {
-        TODO("not implemented")
+        throw NotImplementedError("No update for tiles in String format")
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: ByteArray) {

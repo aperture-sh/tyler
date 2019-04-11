@@ -26,7 +26,9 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
     }
 
     override fun setTile(x: Int, y: Int, z: Int, tile: String) {
-        TODO("not implemented")
+        val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
+        up.write(tile.toByteArray())
+        up.close()
     }
 
     override fun setTile(x: Int, y: Int, z: Int, tile: ByteArray) {
@@ -35,30 +37,27 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
 
         gzip.write(tile)
         gzip.close()
-//        GlobalScope.launch {
-            val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
-            up.write(out.toByteArray())
-            up.close()
-//        }
+        val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
+        up.write(out.toByteArray())
+        up.close()
     }
 
     override fun getTile(x: Int, y: Int, z: Int): ByteArray? =
         GZIPInputStream(getGrid().openDownloadStream(Tile.toID(z, x, y).toString())).readBytes()
 
-    override fun getTileJson(x: Int, y: Int, z: Int): String? {
-        TODO("not implemented")
-    }
+    override fun getTileJson(x: Int, y: Int, z: Int) =
+        GZIPInputStream(getGrid().openDownloadStream(Tile.toID(z, x, y).toString())).bufferedReader().use { it.readText() }
 
     override suspend fun serveTile(x: Int, y: Int, z: Int, properties: List<String>, filter: List<List<Double>>): ByteArray? {
         return if (exists(x, y, z)) getTile(x, y, z) else null
     }
 
     override fun deleteTile(x: Int, y: Int, z: Int) {
-        TODO("not implemented")
+        setTile(x, y, z, ByteArray(0))
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: String, layer: String) {
-        TODO("not implemented")
+        throw NotImplementedError("No update for tiles in String format")
     }
 
     override fun updateTile(x: Int, y: Int, z: Int, tile: ByteArray) {
@@ -83,11 +82,9 @@ class StoreClientMongo(db: String, host: String = "localhost", port: Int = 27017
             val gzip = GZIPOutputStream(out)
             gzip.write(vt.mergeTiles(checkNotNull(getTile(x, y, z)), tile, layer))
             gzip.close()
-//            GlobalScope.launch {
-                val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
-                up.write(out.toByteArray())
-                up.close()
-//            }
+            val up = getGrid().openUploadStream(Tile.toID(z, x, y).toString())
+            up.write(out.toByteArray())
+            up.close()
         } else {
             setTile(x, y, z, vt.createTileTransform(tile, z, x, y, layer))
         }
