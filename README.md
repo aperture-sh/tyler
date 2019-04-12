@@ -7,6 +7,8 @@ The Tyler is a stateless component and provides a REST interface for vector tile
 In favor of it simplicity there is nothing else needed besides a running server oder docker environment.
 One can use POST requests to add more geospatial features to the database. The tile endpoint can be used to build a mapping interface using Mapbox GLJS or OpenLayers.
 
+Detailed documentation of the Marauder components coming soon on our webpage [https://marauder.io](https://marauder.io).
+
 ## Vector Tiling Server using KTOR
 
 `application.kt` contains the main module to start the server application.
@@ -36,7 +38,7 @@ Be aware the filesystem option (`fs`) utilizes the hard disk and can store milli
 
 ### Hint
 
-Multi-Layer is supported now. Keep in mind that multi-layer usage slows down the tile creating process.
+Multi-Layer is supported now. Keep in mind that multi-layer usage slows down the tile creating process.  
 
 License
 -------
