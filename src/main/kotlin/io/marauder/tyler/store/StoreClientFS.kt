@@ -1,6 +1,6 @@
 package io.marauder.tyler.store
 
-import io.marauder.supercharged.models.GeoJSON
+import io.marauder.charged.models.GeoJSON
 import io.marauder.tyler.tiling.VT
 import kotlinx.serialization.ImplicitReflectionSerializer
 import java.io.ByteArrayOutputStream

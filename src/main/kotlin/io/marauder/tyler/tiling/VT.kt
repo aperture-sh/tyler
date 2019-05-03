@@ -1,10 +1,10 @@
 package io.marauder.tyler.tiling
 
-import io.marauder.supercharged.Encoder
-import io.marauder.supercharged.Intersector
-import io.marauder.supercharged.Projector
+import io.marauder.charged.Encoder
+import io.marauder.charged.Intersector
+import io.marauder.charged.Projector
 import kotlinx.serialization.ImplicitReflectionSerializer
-import io.marauder.supercharged.models.*
+import io.marauder.charged.models.*
 /**
  * Wrapper class to encode and merge tiles using the marauder engine
  * @param extend Tile resolution

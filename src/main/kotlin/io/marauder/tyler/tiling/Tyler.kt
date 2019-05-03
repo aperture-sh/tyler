@@ -1,9 +1,9 @@
 package io.marauder.tyler.tiling
 
-import io.marauder.supercharged.Clipper
-import io.marauder.supercharged.Intersector
-import io.marauder.supercharged.Projector
-import io.marauder.supercharged.models.GeoJSON
+import io.marauder.charged.Clipper
+import io.marauder.charged.Intersector
+import io.marauder.charged.Projector
+import io.marauder.charged.models.GeoJSON
 import io.marauder.tyler.store.StoreClient
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory

@@ -10,9 +10,9 @@ import org.slf4j.event.*
 import java.time.*
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
-import io.marauder.supercharged.Projector
-import io.marauder.supercharged.models.Feature
-import io.marauder.supercharged.models.GeoJSON
+import io.marauder.charged.Projector
+import io.marauder.charged.models.Feature
+import io.marauder.charged.models.GeoJSON
 import io.marauder.tyler.store.StoreClientFS
 import io.marauder.tyler.tiling.Tyler
 import io.marauder.tyler.store.StoreClientMongo
