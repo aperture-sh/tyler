@@ -43,7 +43,7 @@ Multi-Layer is supported now. Keep in mind that multi-layer usage slows down the
 License
 -------
 
-SuperCharger is licensed under the
+Tyler is licensed under the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 Unless required by applicable law or agreed to in writing, software
