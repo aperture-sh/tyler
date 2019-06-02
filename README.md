@@ -9,6 +9,20 @@ One can use POST requests to add more geospatial features to the database. The t
 
 Detailed documentation of the Marauder components coming soon on our webpage [https://marauder.io](https://marauder.io).
 
+## Components
+
+Besides the Tyler there are other Marauder components. We provide big data storage solutions focused on visualization and simple analytic tasks. The Following chart provides a simple overview.
+
+![alt text](https://github.com/marauder-io/tyler/raw/master/resources/marauder-components.png "Marauder Component Chart")
+
+Here you see a on demand built heatmap of over 1 billion entities spread of the united states. In detailed few the actual data can be explored while applying attribute or spatial filters.
+
+![alt text](https://github.com/marauder-io/tyler/raw/master/resources/tank-demo.gif "Tank data exploration demo")
+--------
+
+
+For more information feel free to contact us (mail@marauder.io).
+
 ## Vector Tiling Server using KTOR
 
 `application.kt` contains the main module to start the server application.
