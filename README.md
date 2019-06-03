@@ -15,7 +15,7 @@ Besides the Tyler there are other Marauder components. We provide big data stora
 
 ![alt text](https://github.com/marauder-io/tyler/raw/master/resources/marauder-components.png "Marauder Component Chart")
 
-Here you see a on demand built heatmap of over 1 billion entities spread of the united states. In detailed few the actual data can be explored while applying attribute or spatial filters.
+Here you see the Tank with a on demand built heatmap of over 1 billion entities spread over the united states. In a detailed view the actual data can be explored while applying attribute or spatial filters along with data-driven styling.
 
 ![alt text](https://github.com/marauder-io/tyler/raw/master/resources/tank-demo.gif "Tank data exploration demo")
 --------
