@@ -1,6 +1,6 @@
 # Tyler
 
-[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/marauder-io/tyler.svg?branch=master)](https://travis-ci.org/marauder-io/tyler)
+[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/marauder-io/tyler.svg?branch=master)](https://travis-ci.org/marauder-io/tyler) ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/maraud3r/tyler)
 
 The Tyler is a stateless component and provides a REST interface for vector tile storage maintenance.
 
