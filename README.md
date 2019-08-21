@@ -1,25 +1,13 @@
 # Tyler
 
-[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/marauder-io/tyler.svg?branch=master)](https://travis-ci.org/marauder-io/tyler) ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/maraud3r/tyler)
+[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/aperture-sh/tyler.svg?branch=master)](https://travis-ci.org/aperture-sh/tyler) ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/ap3rture/tyler)
 
 The Tyler is a stateless component and provides a REST interface for vector tile storage maintenance.
 
 In favor of it simplicity there is nothing else needed besides a running server oder docker environment.
 One can use POST requests to add more geospatial features to the database. The tile endpoint can be used to build a mapping interface using Mapbox GLJS or OpenLayers.
 
-Detailed documentation of the Marauder components coming soon on our webpage [https://marauder.io](https://marauder.io).
-
-## Components
-
-Besides the Tyler there are other Marauder components. We provide big data storage solutions focused on visualization and simple analytic tasks. The Following chart provides a simple overview.
-
-![alt text](https://github.com/marauder-io/tyler/raw/master/resources/marauder-components.png "Marauder Component Chart")
-
-Here you see the Tank with a on demand built heatmap of over 1 billion entities spread over the united states. In a detailed view the actual data can be explored while applying attribute or spatial filters along with data-driven styling.
-
-![alt text](https://github.com/marauder-io/tyler/raw/master/resources/tank-demo.gif "Tank data exploration demo")
---------
-
+Detailed documentation of the Marauder components coming soon on our webpage [https://aperture.sh](https://aperture.sh).
 
 For more information feel free to contact us (mail@marauder.io).
 
