@@ -21,8 +21,8 @@ For more information feel free to contact us (mail@marauder.io).
 ### Docker Quickstart
 
 The last release is pushed to `:latest`. The `master` branch is always pushed to `:unstable`.  
-`docker pull maraud3r/tyler:latest`  
-`docker run --rm -it -p 23513:23513 maraud3r/tyler:latest`  
+`docker pull ap3rture/tyler:latest`  
+`docker run --rm -it -p 23513:23513 ap3rture/tyler:latest`  
 
 ### REST API
 
