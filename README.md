@@ -1,6 +1,6 @@
 # Tyler
 
-[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/aperture-sh/tyler.svg?branch=master)](https://travis-ci.org/aperture-sh/tyler) [![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/ap3rture/tyler)](https://hub.docker.com/r/ap3rture/tyler)
+[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 The Tyler is a stateless component and provides a REST interface for vector tile storage maintenance.
 
@@ -21,8 +21,8 @@ For more information feel free to contact us (mail@marauder.io).
 ### Docker Quickstart
 
 The last release is pushed to `:latest`. The `master` branch is always pushed to `:unstable`.  
-`docker pull ap3rture/tyler:latest`  
-`docker run --rm -it -p 23513:23513 ap3rture/tyler:latest`  
+`docker pull docker.pkg.github.com/tyler/tyler:latest`  
+`docker run --rm -it -p 23513:23513 docker.pkg.github.com/tyler/tyler:latest`  
 
 ### REST API
 
